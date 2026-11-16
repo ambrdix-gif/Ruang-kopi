@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Ruang Kopi — Dekor Kedai Pixel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1e3c8;--ink:#3a281f;--panel:#fff5df;--panel2:#f4e2bb;--line:#3a281f;--accent:#d98b45;--hi:#ffd77a}
+body.night{--bg:#171a36;--ink:#f3e8d2;--panel:#252a55;--panel2:#1d2147;--line:#090b1c;--accent:#e8a45c;--hi:#6d5f2c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:'Pixelify Sans',ui-monospace,Menlo,Consolas,monospace;font-size:14px;transition:background .3s,color .3s;-webkit-user-select:none;user-select:none}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+.top{display:flex;align-items:center;gap:6px;padding:7px 10px;border-bottom:3px solid var(--line);background:var(--panel);flex:none}
+.brand{font-weight:600;font-size:18px;margin-right:auto;white-space:nowrap;letter-spacing:.5px}
+.btn{font:inherit;color:var(--ink);background:var(--panel);border:3px solid var(--line);box-shadow:0 3px 0 var(--line);padding:4px 9px;cursor:pointer;border-radius:0;white-space:nowrap;line-height:1.2}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+.btn.on{background:var(--hi)}
+.btn.warn{background:#f3b3a6;color:#3a281f}
+.btn:disabled{opacity:.4;pointer-events:none}
+#ctx{flex:none;min-height:46px;display:flex;gap:7px;align-items:center;padding:6px 10px;overflow-x:auto;background:var(--panel2);border-bottom:3px solid var(--line);font-size:13px;white-space:nowrap}
+#ctx .msg{margin-right:auto;opacity:.9;flex:1 1 auto;min-width:130px;white-space:normal;font-size:12.5px;line-height:1.25}
+#ctx .btn{flex:none}
+#main{flex:1;min-height:0;display:flex;flex-direction:column}
+#stage{flex:1;min-height:0;min-width:0;position:relative;background-image:radial-gradient(rgba(0,0,0,.07) 1.5px,transparent 1.5px);background-size:16px 16px}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+#toast{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:6px 12px;border:3px solid var(--line);opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+#toast.show{opacity:1}
+#panel{flex:none;height:42%;min-height:200px;display:flex;flex-direction:column;border-top:3px solid var(--line);background:var(--panel)}
+#tabs{display:flex;gap:5px;overflow-x:auto;padding:7px 8px;flex:none;background:var(--panel2);border-bottom:3px solid var(--line)}
+#tabs .btn{padding:3px 10px}
+#items{flex:1;overflow-y:auto;padding:9px;-webkit-overflow-scrolling:touch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px}
+.card{font:inherit;color:var(--ink);background:var(--bg);border:3px solid var(--line);padding:3px 3px 4px;cursor:pointer;text-align:center;font-size:11px;line-height:1.15;border-radius:0}
+.card canvas{display:block;width:100%;height:54px;image-rendering:pixelated}
+.card.tall canvas{height:92px}
+.card span{display:block;margin-top:2px}
+.card.on{background:var(--hi);box-shadow:0 0 0 2px var(--accent)}
+.card:active{transform:translateY(1px)}
+.sec{font-weight:600;margin:12px 0 7px;font-size:13px;opacity:.85}
+.sec:first-child{margin-top:0}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:6px 0}
+.dots{display:flex;gap:2px;justify-content:center;margin:3px 0}
+.dots i{width:12px;height:12px;border:2px solid var(--line);display:block}
+.note{font-size:12px;opacity:.8;margin:6px 0;line-height:1.35}
+.step{display:flex;align-items:center;gap:6px}
+.step b{min-width:22px;text-align:center}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:9;padding:14px}
+#modal[hidden]{display:none}
+#modal .box{background:var(--panel);border:3px solid var(--line);padding:10px;max-width:96vw;max-height:94vh;display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center}
+#modal img{max-width:100%;max-height:68vh;image-rendering:pixelated;border:3px solid var(--line);-webkit-user-select:auto;user-select:auto;-webkit-touch-callout:default}
+@media (min-width:900px){
+  #main{flex-direction:row}
+  #panel{height:auto;width:380px;min-height:0;border-top:none;border-left:3px solid var(--line)}
+}
+#hud{flex:none;display:flex;gap:6px;align-items:center;padding:5px 10px;background:var(--panel2);border-bottom:3px solid var(--line);overflow-x:auto;white-space:nowrap}
+#hud[hidden]{display:none}
+.pill{border:3px solid var(--line);background:var(--bg);padding:2px 9px;font-size:13px;line-height:1.25;flex:none}
+.pill.money{background:#d9f0c8;color:#23421b}
+body.night .pill.money{background:#2e4a2a;color:#dff5cf}
+.pill .st{color:#e0a020;letter-spacing:1px;font-size:16px;line-height:1}
+.pill .st.off{opacity:.25}
+#hud .btn{margin-left:auto;flex:none}
+.card .pr{color:#2f7a3a;font-weight:600}
+body.night .card .pr{color:#8fdc9a}
+.card.lock{opacity:.5}
+#gm{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:12;padding:14px}
+#gm[hidden]{display:none}
+.mbox{background:var(--panel);border:3px solid var(--line);padding:14px;width:min(540px,96vw);max-height:92vh;overflow:auto;display:flex;flex-direction:column;gap:10px;text-align:center}
+.mbox h3{margin:0;font-size:18px}
+.mbody{font-size:13px;line-height:1.4;text-align:left}
+.mrow{display:flex;gap:9px;flex-wrap:wrap;justify-content:center}
+.mrow .card{width:104px}
+.mcard{font:inherit;color:var(--ink);background:var(--bg);border:3px solid var(--line);box-shadow:0 3px 0 var(--line);padding:12px;cursor:pointer;text-align:left;flex:1 1 200px;display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:1.35}
+.mcard b{font-size:16px}
+.recap .big{font-size:26px;font-weight:600;text-align:center;margin:2px 0 8px;color:#2f7a3a}
+.rl{display:flex;justify-content:space-between;padding:3px 0;border-bottom:2px dashed rgba(0,0,0,.18)}
+.tk{display:block;width:100%;font:inherit;color:var(--ink);background:var(--bg);border:3px solid var(--line);padding:6px 8px;margin:0 0 7px;text-align:left;cursor:pointer}
+.tk.rdy{background:#c9f0c4;color:#23421b}
+.tkt{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:4px}
+.pbar{display:block;flex:1;height:8px;border:2px solid var(--line);background:#fff}
+.pbar i{display:block;height:100%}
+.tki{display:flex;align-items:center;gap:8px;font-size:13px;padding:2px 0}
+.tki canvas,.mi canvas{image-rendering:pixelated;flex:none}
+.tki small,.mi small{display:block;opacity:.75;font-size:11px}
+.mi{display:flex;gap:9px;align-items:center;padding:5px 0;border-bottom:2px dashed rgba(0,0,0,.15)}
+.mi.off{opacity:.55}
+@media (max-width:480px){.brand{font-size:15px}.top{gap:4px;padding:6px}.top .btn{padding:3px 7px}}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div class="brand">&#9749; Ruang Kopi</div>
+    <button class="btn on" id="bGm">Santai</button>
+    <button class="btn" id="bUndo">Undo</button>
+    <button class="btn" id="bNight">Malam</button>
+    <button class="btn" id="bShot">Foto</button>
+  </header>
+  <div id="hud" hidden></div>
+  <div id="ctx"></div>
+  <div id="main">
+    <div id="stage">
+      <canvas id="cv"></canvas>
+      <div id="toast"></div>
+    </div>
+    <section id="panel">
+      <nav id="tabs"></nav>
+      <div id="items"></div>
+    </section>
+  </div>
+</div>
+<div id="gm" hidden></div>
+<div id="modal" hidden><div class="box"><img id="shotImg" alt="Foto ruangan"><div class="note">Di HP: tahan gambar lalu simpan. Di laptop: klik kanan, simpan gambar.</div><button class="btn" id="bClose">Tutup</button></div></div>
+
+<script>
+(()=>{
+'use strict';
+/* ============================================================
+   Ruang Kopi — isometric pixel cafe decorator
+   Semua sprite digambar dari kode (voxel-ish box/cylinder),
+   jadi tidak ada gambar eksternal.
+   Satuan: 1 tile = 8u. 1u horizontal = 2px, vertikal = 1px. z dalam px.
+   ============================================================ */
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function hash(a,b=0,c=0){let h=Math.imul(a|0,374761393)^Math.imul(b|0,668265263)^Math.imul(c|0,2147483647);h=Math.imul(h^(h>>>13),1274126177);h^=h>>>16;return (h>>>0)/4294967296;}
+const _rgbc={};
+function hex2rgb(h){let v=_rgbc[h];if(v)return v;let s=h.replace('#','');if(s.length===3)s=s.split('').map(c=>c+c).join('');const n=parseInt(s,16);return _rgbc[h]=[(n>>16)&255,(n>>8)&255,n&255];}
+const _sc={};
+function shade(hex,f){const k=hex+'|'+f;let v=_sc[k];if(v)return v;const o=hex2rgb(hex).map(x=>clamp(Math.round(f>1?x+(255-x)*(f-1)*1.5:x*f),0,255));return _sc[k]='rgb('+o[0]+','+o[1]+','+o[2]+')';}
+const mkCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
+const R=(g,x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h);};
+
+const WALL_H=88, SLAB=8, MARGIN=14, PAD=3, WP=2;
+const OUTC=[42,28,26];
+let OX=0,OY=0;
+
+/* ---------------- tema warna furnitur ---------------- */
+const THEMES={
+  japandi:{name:'Japandi',wood:'#d3a56c',wood2:'#a97b48',top:'#efe6d4',fabric:'#8fa385',accent:'#d0764b',pot:'#e5dccb'},
+  industrial:{name:'Industrial',wood:'#8a6446',wood2:'#3d424a',top:'#9a9da3',fabric:'#8a4a36',accent:'#e0a431',pot:'#3d424a'},
+  vintage:{name:'Vintage',wood:'#8b4f2e',wood2:'#5a2f1b',top:'#f1e2c3',fabric:'#9a3140',accent:'#dca83f',pot:'#b8693a'},
+  pastel:{name:'Pastel',wood:'#f0d3c4',wood2:'#dfae9d',top:'#ffffff',fabric:'#f2a9c1',accent:'#9fd9cb',pot:'#f6c4d6'},
+  midnight:{name:'Midnight',wood:'#4a4268',wood2:'#2c2745',top:'#6a6086',fabric:'#4a6fb0',accent:'#f2c14e',pot:'#383256'},
+  tropis:{name:'Tropis Rotan',wood:'#cfa970',wood2:'#6f5233',top:'#f3ead3',fabric:'#5b8f6e',accent:'#e08a4a',pot:'#d4b18a'},
+  warkop:{name:'Retro Warkop',wood:'#b98a52',wood2:'#6d4426',top:'#efe7d2',fabric:'#3f808f',accent:'#d9453a',pot:'#c9784a'},
+  beton:{name:'Beton Minimalis',wood:'#bda587',wood2:'#35353a',top:'#dcdcd7',fabric:'#a9a193',accent:'#e8573a',pot:'#cbc6bb'},
+  akademia:{name:'Dark Academia',wood:'#5e3f2c',wood2:'#2e1f16',top:'#d9c9a5',fabric:'#2f5a47',accent:'#c9a14a',pot:'#3b4b3e'},
+  sore:{name:'Golden Hour',wood:'#cc8e5c',wood2:'#7e4b36',top:'#f7e9d9',fabric:'#d97a5a',accent:'#f3b94d',pot:'#e8c9a6'}
+};
+const THEME_IDS=Object.keys(THEMES);
+const FIXED={metal:'#bfc6ce',dark:'#34333b',black:'#1e1c22',cream:'#f4ead3',white:'#f6f4ef',glass:'#b9e1ee',plant:'#4d9b48',plant2:'#357a3c',red:'#cc4a3c',gold:'#e6b84a',skin:'#f0c8a0',coffee:'#5a3520',screen:'#7fd6c2',brown:'#6f4730',hair:'#3a2a22'};
+function slotColor(s,theme){if(s[0]==='#')return s;const t=THEMES[theme];return (t&&t[s])||FIXED[s]||'#ff00ff';}
+
+/* ---------------- primitif gambar iso ---------------- */
+function drawBox(g,ax,ay,p,col,sh){
+  sh=sh||1;
+  const w=p.w,d=p.d,h=p.h;
+  const tx=ax+2*(p.x-p.y), ty=ay+(p.x+p.y)-(p.z+h);
+  const cL=shade(col,.95*sh), cR=shade(col,.74*sh), cT=shade(col,1.14*sh);
+  g.fillStyle=cL;
+  const lx=tx-2*d, ly=ty+d;
+  for(let c=0;c<2*w;c++) g.fillRect(lx+c,ly+(c>>1),1,h+1);
+  g.fillStyle=cR;
+  const bx=tx+2*(w-d), by=ty+w+d;
+  for(let c=0;c<2*d;c++) g.fillRect(bx+c,by-1-(c>>1),1,h+1);
+  g.fillStyle=cT;
+  for(let r=0;r<w+d;r++){
+    const l=r<d?tx-2*r-2:tx-2*d+2*(r-d);
+    const rr=r<w?tx+2*r+2:tx+2*w-2*(r-w);
+    g.fillRect(l,ty+r,rr-l,1);
+  }
+}
+function drawCyl(g,ax,ay,p,col,sh){
+  sh=sh||1;
+  const cx=ax+2*(p.x-p.y), cy=ay+(p.x+p.y)-p.z;
+  const rx=Math.max(p.r<1?1:2,Math.round(2.83*p.r)), ry=Math.max(1,Math.round(1.41*p.r));
+  const cT=shade(col,1.14*sh), c1=shade(col,1.0*sh), c2=shade(col,.85*sh), c3=shade(col,.68*sh);
+  const es=[];
+  for(let dx=-rx;dx<rx;dx++){
+    const u=(dx+.5)/rx;
+    const e=Math.max(1,Math.round(ry*Math.sqrt(1-u*u)));
+    es.push(e);
+    g.fillStyle=u<-.35?c1:(u<.4?c2:c3);
+    g.fillRect(cx+dx,cy-p.h,1,p.h+e);
+  }
+  g.fillStyle=cT;
+  for(let dx=-rx,i=0;dx<rx;dx++,i++){const e=es[i];g.fillRect(cx+dx,cy-p.h-e,1,2*e);}
+}
+function outline(cv){
+  const w=cv.width,h=cv.height,g=cv.getContext('2d'),img=g.getImageData(0,0,w,h),d=img.data,o=new Uint8ClampedArray(d);
+  const A=(x,y)=>(x<0||y<0||x>=w||y>=h)?0:d[(y*w+x)*4+3];
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const i=(y*w+x)*4;
+    if(d[i+3]>=40)continue;
+    if(A(x-1,y)>=40||A(x+1,y)>=40||A(x,y-1)>=40||A(x,y+1)>=40){o[i]=OUTC[0];o[i+1]=OUTC[1];o[i+2]=OUTC[2];o[i+3]=255;}
+  }
+  img.data.set(o);g.putImageData(img,0,0);
+}
+const bnd=p=>p.t==='b'?[p.x,p.x+p.w,p.y,p.y+p.d,p.z,p.z+p.h]:[p.x-p.r,p.x+p.r,p.y-p.r,p.y+p.r,p.z,p.z+p.h];
+function sortBoxes(list,getB){
+  const n=list.length,bs=list.map(getB),before=Array.from({length:n},()=>[]);
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+    if(i===j)continue;const a=bs[i],b=bs[j];
+    const ab=a[1]<=b[0]||a[3]<=b[2]||(a.length>4&&a[5]<=b[4]);
+    const ba=b[1]<=a[0]||b[3]<=a[2]||(a.length>4&&b[5]<=a[4]);
+    if(ab&&!ba)before[j].push(i);
+  }
+  const out=[],st=new Array(n).fill(0);
+  const visit=i=>{if(st[i])return;st[i]=1;for(const k of before[i])visit(k);out.push(list[i]);};
+  for(let i=0;i<n;i++)visit(i);
+  return out;
+}
+function fillTile(g,tx,ty,color){g.fillStyle=color;for(let r=0;r<16;r++){const hw=2*Math.min(r,15-r)+2;g.fillRect(tx-hw,ty+r,hw*2,1);}}
+
+/* ---------------- katalog item ---------------- */
+const DEFS={}, CATS={barista:[],dine:[],dekor:[],dinding:[]};
+function def(o){DEFS[o.id]=o;CATS[o.cat].push(o.id);return o;}
+const B=(x,y,z,w,d,h,c,o)=>({t:'b',x,y,z,w,d,h,c,o:o||null});
+const C=(x,y,z,r,h,c,o)=>({t:'c',x,y,z,r,h,c,o:o||null});
+
+const CT=20;
+const counterBase=n=>{
+  const L=8*n,p=[B(0,0,0,L,8,3,'wood2'),B(0,0,3,L-1,7,CT-5,'wood'),B(0,0,CT-2,L,8,2,'top')];
+  for(let i=0;i<n;i++)p.push(B(8*i+1,7,5,6,1,CT-9,'wood2'));
+  p.push(B(L-1,1,5,1,6,CT-9,'wood2'));
+  return p;
+};
+const shelf=(fill)=>{
+  const p=[B(0,0,0,8,1,38,'wood2'),B(0,0,0,1,4,38,'wood'),B(7,0,0,1,4,38,'wood')];
+  [0,12,24,37].forEach(z=>p.push(B(0,0,z,8,4,1,'wood')));
+  return p.concat(fill);
+};
+/* karakter manusia: sprite pixel-per-pixel (proporsi ~4 kepala, shading kiri-atas) */
+function drawPerson(g,o,f,theme,back){
+  const C=c=>c?slotColor(c,theme):null,dy=-f;
+  const P=(x,y,c,w,h)=>{g.fillStyle=c;g.fillRect(x,y,w||1,h||1);};
+  const SB=(x,y,w,h,base)=>{P(x,y,base,w,h);if(w>2)P(x,y,shade(base,1.16),1,h);P(x+w-1,y,shade(base,.72),1,h);P(x,y+h-1,shade(base,.82),w,1);};
+  const sk=o.skin||'#f0c8a0',skS=shade(sk,.8),skL=shade(sk,1.1);
+  const pants=C(o.pants),shoe=C(o.shoes),sh=C(o.shirt),H=C(o.hair)||'#222';
+  // kaki + sepatu / rok
+  if(o.skirt){
+    const sc=C(o.skirt);
+    SB(6,31,3,5,sk);SB(9,31,3,5,sk);
+    SB(5,35,4,3,shoe);SB(9,35,4,3,shoe);P(5,37,shade(shoe,.6),4,1);P(9,37,shade(shoe,.6),4,1);
+    SB(5,24,8,8,sc);P(4,29,sc,10,3);P(4,29,shade(sc,1.16),1,3);P(13,29,shade(sc,.72),1,3);P(4,31,shade(sc,.8),10,1);
+  }else{
+    const w=o.baggy?5:4,lx=o.baggy?4:5,rx=lx+w;
+    SB(lx,22,w,13,pants);SB(rx,22,w,13,pants);
+    if(o.baggy){for(const x of [lx,rx]){P(x,31,shade(pants,.8),w,1);P(x+1,26,shade(pants,.86),w-2,2);}}
+    SB(lx-1,34,w+1,4,shoe);SB(rx,34,w+1,4,shoe);
+    P(lx-1,37,shade(shoe,.62),w+1,1);P(rx,37,shade(shoe,.62),w+1,1);
+  }
+  P(7,12+dy,skS,4,2);
+  // badan
+  const ov=!!o.oversize,tx=ov?4:5,tw=ov?10:8;
+  if(o.crop){SB(tx,13+dy,tw,7,sh);P(tx+1,20+dy,sk,tw-2,3);P(tx+1,20+dy,skL,1,3);P(tx+tw-2,20+dy,skS,1,3);}
+  else SB(tx,13+dy,tw,12,sh);
+  if(o.crop||o.neckV){P(7,13+dy,sk,4,1);P(8,14+dy,sk,2,1);}
+  else P(7,13+dy,shade(sh,1.2),4,1);
+  if(!back){
+    if(o.graphic){const W='#efece2',D='#1c1c22';
+      P(7,16+dy,W,4,1);P(6,17+dy,W,6,2);P(7,19+dy,W,4,1);P(7,20+dy,W,4,1);
+      P(7,17+dy,D,1,2);P(10,17+dy,D,1,2);P(8,19+dy,D,2,1);P(8,20+dy,D);P(10,20+dy,D);}
+    if(o.vest){const v=C(o.vest);P(tx,15+dy,v,2,9);P(tx+tw-2,15+dy,v,2,9);P(tx,15+dy,shade(v,1.2),1,9);P(tx+tw-1,15+dy,shade(v,.7),1,9);}
+    if(o.tie){const t=C(o.tie);P(8,14+dy,t,2,1);P(8,15+dy,t,2,5);P(9,15+dy,shade(t,.72),1,5);P(8,15+dy,shade(t,1.2),1,2);}
+    if(o.scarf){const t=C(o.scarf);P(6,13+dy,t,6,2);P(6,13+dy,shade(t,1.2),6,1);P(9,15+dy,t,2,3);P(10,15+dy,shade(t,.72),1,3);}
+    if(o.chain){P(7,14+dy,'#cfd5dc');P(8,15+dy,'#cfd5dc',2,1);P(10,14+dy,'#cfd5dc');P(8,16+dy,'#e6c24a',2,1);}
+    if(o.choker)P(7,12+dy,'#101014',4,1);
+  }
+  // apron
+  if(o.apron){
+    const A=C(o.apron),ay=o.apronY||20,ah=o.apronH||8;
+    SB(5,ay,8,ah,A);P(5,ay,shade(A,1.25),8,1);
+    if(!back&&ah>=8)P(7,ay+3,shade(A,.78),4,1);
+  }
+  // lengan
+  const ax=[ov?2:3,ov?14:13];
+  for(const x of ax){
+    if(o.sleeve==='long'){SB(x,14+dy,2,10,sh);P(x,23+dy,shade(sh,.78),2,1);P(x,24+dy,sk,2,2);P(x+1,24+dy,skS,1,2);}
+    else if(o.sleeve==='short'){SB(x,14+dy,2,5,sh);SB(x,19+dy,2,5,sk);P(x,24+dy,sk,2,2);P(x+1,24+dy,skS,1,2);}
+    else{SB(x,14+dy,2,10,sk);P(x,24+dy,sk,2,2);P(x+1,24+dy,skS,1,2);}
+  }
+  if(o.tat){
+    const ink=C(o.ink||'#27304d'),y0=o.sleeve==='short'?19:15,pat=[3,1,2,3,2,1,3,2,1,3];
+    const tat=x=>{for(let i=0,y=y0;y<=23;i++,y++){const m=pat[i%pat.length];if(m&1)P(x,y+dy,ink);if(m&2)P(x+1,y+dy,ink);}};
+    tat(ax[1]);if(o.tat>1)tat(ax[0]);
+  }
+  // kepala
+  P(4,7+dy,skL,1,2);P(13,7+dy,skS,1,2);
+  P(5,3+dy,sk,8,9);P(5,3+dy,skL,1,9);P(12,3+dy,skS,1,9);P(5,11+dy,skS,8,1);
+  g.clearRect(5,11+dy,1,1);g.clearRect(12,11+dy,1,1);
+  const mouth=o.lips||shade(sk,.6);
+  if(!back){
+    P(7,7+dy,'#2a1b1b');P(10,7+dy,'#2a1b1b');
+    P(7,6+dy,shade(H,.95));P(10,6+dy,shade(H,.95));
+    P(9,8+dy,skS);P(8,10+dy,mouth,2,1);
+    if(o.blush){P(6,9+dy,o.blush);P(11,9+dy,o.blush);}
+    if(o.beard){const b=C(o.beard);P(5,9+dy,b,2,1);P(11,9+dy,b,2,1);P(5,10+dy,b,8,1);P(6,11+dy,b,6,1);P(8,10+dy,mouth,2,1);}
+    if(o.glasses){const fr='#2b2b33';
+      P(6,6+dy,fr,3,1);P(9,6+dy,fr,3,1);P(5,7+dy,fr);P(12,7+dy,fr);P(8,7+dy,fr,2,1);
+      P(6,8+dy,'#8b909e');P(8,8+dy,'#8b909e');P(9,8+dy,'#8b909e');P(11,8+dy,'#8b909e');}
+    if(o.earring)P(13,9+dy,'#e6c24a',1,2);
+  }else{
+    P(4,3+dy,H,10,9);P(4,3+dy,shade(H,1.25),1,9);P(13,3+dy,shade(H,.7),1,9);
+    g.clearRect(4,11+dy,1,1);g.clearRect(13,11+dy,1,1);
+  }
+  // rambut
+  const HL=shade(H,1.32),HS=shade(H,.7);
+  const cap=()=>{P(4,2+dy,H,10,3);P(5,1+dy,H,8,1);P(6,2+dy,HL,4,1);P(5,1+dy,HL,2,1);P(13,2+dy,HS,1,3);};
+  if(o.hs==='side'){
+    cap();P(5,5+dy,H,5,1);P(5,6+dy,H,1,1);P(12,5+dy,H,1,2);P(9,3+dy,HS,1,2);
+    if(back)P(4,3+dy,H,10,6);
+  }else if(o.hs==='short'){
+    cap();P(5,5+dy,H,3,1);P(11,5+dy,H,2,1);P(4,5+dy,H,1,3);
+  }else if(o.hs==='bob'){
+    cap();P(4,5+dy,H,2,8);P(12,5+dy,H,2,8);P(4,5+dy,HL,1,8);P(13,5+dy,HS,1,8);P(5,5+dy,H,6,1);P(5,6+dy,H,2,1);
+    if(back){P(4,3+dy,H,10,10);P(4,3+dy,HL,1,10);P(13,3+dy,HS,1,10);}
+  }else if(o.hs==='bun'){
+    P(5,2+dy,H,8,3);P(4,4+dy,H,1,5);P(13,4+dy,H,1,5);P(13,4+dy,HS,1,5);P(6,2+dy,HL,4,1);
+    P(5,4+dy,H,8,1);P(5,5+dy,H,3,1);
+    P(7,0+dy,H,4,3);P(8,0+dy,HL,2,1);P(10,1+dy,HS,1,2);if(o.bunTie)P(8,2+dy,C(o.bunTie),2,1);
+    if(back)P(4,3+dy,H,10,6);
+  }
+  if(o.hat){
+    const hc=C(o.hat),hb=C(o.hatBand||o.hat);
+    P(4,2+dy,hc,10,3);P(5,1+dy,hc,8,1);P(5,1+dy,shade(hc,1.3),3,1);P(13,2+dy,shade(hc,.7),1,3);
+    P(4,5+dy,hb,10,2);P(4,5+dy,shade(hb,1.25),1,2);P(13,5+dy,shade(hb,.7),1,2);P(4,6+dy,shade(hb,.72),10,1);
+    if(!back)P(8,5+dy,'#d7b44a',2,1);
+  }
+}
+function pixPerson(o){return {pix:o,fw:1,fd:1,P:()=>[]};}
+const baristaDef=(id,name,o)=>def({id,cat:'barista',name,fw:1,fd:1,frames:2,fms:850,char:true,pix:o,P:()=>[]});
+
+/* --- Barista --- */
+def({id:'counter1',cat:'barista',name:'Counter',fw:1,fd:1,P:f=>counterBase(1)});
+def({id:'counter2',cat:'barista',name:'Counter Panjang',fw:2,fd:1,P:f=>counterBase(2)});
+def({id:'counter3',cat:'barista',name:'Counter 3 Petak',fw:3,fd:1,P:f=>counterBase(3)});
+def({id:'counterL',cat:'barista',name:'Counter Sudut',fw:2,fd:2,cells:[[0,0],[1,0],[0,1]],P:f=>[
+  B(0,0,0,16,8,3,'wood2'),B(0,8,0,8,8,3,'wood2'),B(0,0,3,16,8,17,'wood'),B(0,8,3,8,8,17,'wood'),
+  B(0,0,20,16,8,2,'top'),B(0,8,20,8,8,2,'top')]});
+def({id:'espresso',cat:'barista',name:'Bar Espresso',fw:2,fd:1,P:f=>counterBase(2).concat([
+  B(2,1,CT,11,6,8,'metal'),B(2,1,CT+8,11,6,1,'metal',{s:1.12}),C(5,4,CT+9,2,2,'metal',{s:1.05}),
+  B(3,7,CT+3,2,1,3,'black'),B(8,7,CT+3,2,1,3,'black'),B(6,7,CT+7,2,1,1,'screen'),B(13,2,CT,1,1,7,'metal'),
+  C(14.5,5.5,CT,1.2,2,'white'),C(9,4,CT+9,1.2,2,'white')]),
+  fx:[{k:'steam',x:14.5,y:5.5,z:CT+3},{k:'steam',x:9,y:4,z:CT+12}]});
+def({id:'kasir',cat:'barista',name:'Kasir',fw:1,fd:1,P:f=>counterBase(1).concat([
+  B(1,2,CT,6,5,3,'dark'),B(2,6,CT+3,4,1,4,'screen'),B(2,2,CT+3,4,1,2,'black'),C(6.5,1.5,CT,1,3,'glass')])});
+def({id:'poffertjes',cat:'barista',name:'Panggangan Poffertjes',fw:1,fd:1,P:f=>counterBase(1).concat([
+  B(1,1,CT,6,6,2,'dark'),B(1,1,CT+2,6,6,1,'black'),
+  C(2.6,2.6,CT+3,1.1,1.5,'gold'),C(5.4,2.6,CT+3,1.1,1.5,'gold'),C(2.6,5.4,CT+3,1.1,1.5,'gold'),C(5.4,5.4,CT+3,1.1,1.5,'gold'),
+  B(7,3,CT+1,1,2,1,'metal')]),
+  fx:[{k:'steam',x:4,y:4,z:CT+6}]});
+def({id:'grinder',cat:'barista',name:'Grinder Kopi',fw:1,fd:1,P:f=>counterBase(1).concat([
+  B(2,2,CT,3,3,8,'black'),C(3.5,3.5,CT+8,1.6,5,'coffee'),B(5,4,CT,2,2,2,'metal')])});
+def({id:'etalase',cat:'barista',name:'Etalase Kue',fw:2,fd:1,P:f=>[
+  B(0,0,0,16,8,3,'wood2'),B(0,0,3,16,7,5,'wood'),B(1,7,4,14,1,3,'wood2'),B(0,0,8,16,8,1,'cream'),
+  B(1,2,9,3,3,2,'accent'),B(5,2,9,3,3,3,'cream'),B(9,3,9,3,3,2,'red'),B(13,2,9,2,3,3,'gold'),
+  B(1,1,13,14,6,1,'glass'),B(2,2,14,3,3,2,'red'),B(7,2,14,3,3,3,'accent'),B(11,3,14,3,3,2,'cream'),
+  B(0,0,9,16,8,9,'glass',{a:.3}),B(0,0,18,16,8,2,'top')]});
+def({id:'kulkas',cat:'barista',name:'Kulkas Minuman',fw:1,fd:1,P:f=>{
+  const p=[B(0,0,0,8,8,3,'dark'),B(0,0,3,8,6,37,'dark'),B(0,0,40,8,8,1,'dark',{s:1.1})];
+  const cols=['red','accent','gold','plant'];
+  for(let j=0;j<4;j++)for(let i=0;i<3;i++)p.push(B(1+i*2,6,6+j*8,1,1,5,cols[(i+j)%4]));
+  p.push(B(1,7,4,6,1,34,'glass',{a:.45}),B(6,7,18,1,1,8,'metal'));return p;}});
+def({id:'rakCangkir',cat:'barista',name:'Rak Cangkir',fw:1,fd:1,P:f=>{
+  const fill=[];
+  [1,13,25].forEach((z,k)=>{fill.push(C(2.5,2.5,z,1,2,'white'),C(5,2.5,z,1,2,k===1?'accent':'white'),C(3.8,2,z+2,.9,2,'cream'));});
+  return shelf(fill);}});
+baristaDef('baristaMRebel','Cowok Rebel',{skin:'#c98f5f',hair:'#1b1b20',hat:'#26262c',hatBand:'#3a3a44',beard:'#2e211b',shirt:'#202026',oversize:true,sleeve:'short',pants:'#6a7048',baggy:true,shoes:'#f1f1f1',apron:'#3f5273',apronY:22,apronH:7,tat:2,ink:'#1f2a44',graphic:true,earring:true,chain:true});
+baristaDef('baristaMPro','Cowok Profesional',{skin:'#f0c9a2',hair:'#33241d',hs:'side',glasses:true,shirt:'#f4f1ea',sleeve:'long',pants:'#2d313d',shoes:'#4b2f21',apron:'wood2',apronY:20,apronH:12,tie:'#7a1f2b',vest:'#4a3b33'});
+baristaDef('baristaFRebel','Cewek Rebel',{skin:'#e3b088',hair:'#ff6fae',hs:'bob',shirt:'#18181d',crop:true,sleeve:'none',pants:'#4a5470',baggy:true,shoes:'#1d1d22',apron:'#1f1f25',apronY:23,apronH:6,tat:2,ink:'#2a2f55',lips:'#c04a6a',blush:'#e58aa6',earring:true,choker:true});
+baristaDef('baristaFPro','Cewek Profesional',{skin:'#f3d0b0',hair:'#6b3b2b',hs:'bun',shirt:'#f6f2ea',sleeve:'long',skirt:'#2a2c38',shoes:'#25252b',apron:'accent',apronY:21,apronH:8,scarf:'accent',lips:'#c96a66',blush:'#eea7a0',bunTie:'accent'});
+DEFS.barista=DEFS.baristaMPro; /* kompatibel dengan simpanan lama */
+def({id:'menuboard',cat:'barista',name:'Papan Menu',wall:true,wt:2,ht:32,elev:36,draw:(g,w,h,o)=>{
+  R(g,0,0,w,h,'#7a5230');R(g,2,2,w-4,h-4,'#26332f');
+  text(g,'MENU',4,5,'#f4ead3');R(g,w-12,4,7,6,'#f4ead3');R(g,w-5,6,2,3,'#f4ead3');R(g,w-11,5,5,1,'#26332f');
+  for(let i=0;i<4;i++){R(g,5,13+i*4,10+((i*5)%8),1,'#d8cfb3');R(g,w-12,13+i*4,6,1,'#e6b84a');}
+}});
+
+/* --- Dine-in --- */
+def({id:'mejaKotak',cat:'dine',name:'Meja Kotak',fw:1,fd:1,P:f=>[
+  B(1,1,0,1,1,12,'wood2'),B(6,1,0,1,1,12,'wood2'),B(1,6,0,1,1,12,'wood2'),B(6,6,0,1,1,12,'wood2'),
+  B(0,0,12,8,8,2,'wood'),C(3,3,14,1,2,'white'),C(5.5,5,14,1,2,'white')]});
+def({id:'mejaBulat',cat:'dine',name:'Meja Bulat',fw:1,fd:1,P:f=>[
+  C(4,4,0,2.5,1,'wood2'),C(4,4,1,.8,11,'wood2'),C(4,4,12,4.6,2,'wood'),C(3,3.5,14,1,2,'white')]});
+def({id:'mejaPanjang',cat:'dine',name:'Meja Panjang',fw:3,fd:1,P:f=>[
+  B(2,1,0,1,6,12,'wood2'),B(21,1,0,1,6,12,'wood2'),B(0,0,12,24,8,2,'wood'),C(12,4,14,1,3,'glass'),B(11,3,17,2,2,2,'accent'),C(6,4,14,1,2,'white'),C(18,4,14,1,2,'white')]});
+def({id:'kursi',cat:'dine',name:'Kursi',fw:1,fd:1,P:f=>[
+  B(1,1,0,1,1,7,'wood2'),B(6,1,0,1,1,7,'wood2'),B(1,6,0,1,1,7,'wood2'),B(6,6,0,1,1,7,'wood2'),
+  B(1,1,7,6,6,2,'fabric'),B(1,1,9,6,1,7,'wood')]});
+def({id:'bangku',cat:'dine',name:'Bangku Bulat',fw:1,fd:1,P:f=>[
+  C(4,4,0,2.6,1,'wood2'),C(4,4,1,.8,6,'wood2'),C(4,4,7,3,2,'fabric')]});
+def({id:'bangkuBar',cat:'dine',name:'Bangku Bar',fw:1,fd:1,P:f=>[
+  C(4,4,0,2.6,1,'wood2'),C(4,4,1,.8,12,'wood2'),C(4,4,5,1.9,1,'wood2'),C(4,4,13,3,2,'fabric')]});
+def({id:'sofa2',cat:'dine',name:'Sofa 2 Dudukan',fw:2,fd:1,P:f=>[
+  B(0,0,0,16,8,3,'wood2'),B(0,0,3,16,8,4,'fabric'),B(0,0,7,16,2,8,'fabric',{s:.9}),B(0,0,7,2,8,4,'fabric',{s:.95}),B(14,0,7,2,8,4,'fabric',{s:.95}),
+  B(2,2,7,6,6,3,'fabric',{s:1.08}),B(8,2,7,6,6,3,'fabric',{s:1.08}),B(3,2,10,2,2,3,'accent')]});
+def({id:'armchair',cat:'dine',name:'Kursi Santai',fw:1,fd:1,P:f=>[
+  B(0,0,0,8,8,3,'wood2'),B(0,0,3,8,8,4,'fabric'),B(0,0,7,8,2,7,'fabric',{s:.9}),B(0,0,7,2,8,4,'fabric',{s:.95}),B(6,0,7,2,8,4,'fabric',{s:.95}),B(2,2,7,4,6,2,'fabric',{s:1.1})]});
+def({id:'boothL',cat:'dine',name:'Booth Pojok',fw:2,fd:2,cells:[[0,0],[1,0],[0,1]],P:f=>[
+  B(0,0,0,16,8,3,'wood2'),B(0,8,0,8,8,3,'wood2'),B(0,0,3,16,8,4,'fabric'),B(0,8,3,8,8,4,'fabric'),
+  B(0,0,7,16,2,10,'fabric',{s:.9}),B(0,2,7,2,14,10,'fabric',{s:.9}),B(2,2,7,14,6,3,'fabric',{s:1.08}),B(2,8,7,6,8,3,'fabric',{s:1.08})]});
+def({id:'pelanggan1',cat:'dine',name:'Pelanggan A',fw:1,fd:1,frames:2,fms:1000,pix:{skin:'#e6bc94',hair:'#2a1f1a',hs:'short',shirt:'fabric',sleeve:'long',pants:'#3a4a66',shoes:'#2c2c30'},P:()=>[]});
+def({id:'pelanggan2',cat:'dine',name:'Pelanggan B',fw:1,fd:1,frames:2,fms:900,pix:{skin:'#f3cfa8',hair:'#c9a25a',hs:'bob',shirt:'#e9e4d6',sleeve:'short',pants:'#4a3b32',shoes:'#e8e4da',lips:'#c66a6a'},P:()=>[]});
+
+/* --- Dekor --- */
+def({id:'tanaman',cat:'dekor',name:'Tanaman Pot',fw:1,fd:1,P:f=>[
+  C(4,4,0,2.6,6,'pot'),C(4,4,6,2.9,1,'pot',{s:1.1}),B(2,2,7,4,4,3,'plant'),B(1,3,9,3,3,3,'plant2'),B(4,1,10,3,3,3,'plant'),B(3,3,12,2,2,3,'plant2')]});
+def({id:'monstera',cat:'dekor',name:'Pohon Besar',fw:1,fd:1,P:f=>[
+  C(4,4,0,3,7,'pot'),C(4,4,7,.8,16,'brown'),B(1,1,20,6,6,4,'plant'),B(0,3,25,5,5,4,'plant2'),B(3,0,26,5,5,4,'plant2'),B(2,2,29,5,5,4,'plant'),B(1,2,34,4,4,3,'plant2')]});
+def({id:'lampuLantai',cat:'dekor',name:'Lampu Lantai',fw:1,fd:1,light:{x:4,y:4,z:30,r:58},P:f=>[
+  C(4,4,0,2,1,'dark'),C(4,4,1,.5,28,'dark'),C(4,4,26,3,6,'#f8e3a6')]});
+def({id:'lampuGantung',cat:'dekor',name:'Lampu Gantung',fw:1,fd:1,layer:'air',light:{x:4,y:4,z:38,r:50},P:f=>[
+  C(4,4,38,1.5,1,'#ffeaa0'),C(4,4,39,3,5,'accent'),C(4,4,44,.35,44,'dark')]});
+def({id:'rakBuku',cat:'dekor',name:'Rak Buku',fw:1,fd:1,P:f=>{
+  const fill=[],cols=['red','accent','gold','plant2','#3d6aa8','cream'];
+  [1,13,25].forEach((z,k)=>{for(let i=0;i<6;i++)fill.push(B(1+i,1,z,1,3,5+((i+k)%3)*2,cols[(i+k*2)%6]));});
+  return shelf(fill);}});
+def({id:'karpet',cat:'dekor',name:'Karpet Kotak',fw:2,fd:2,layer:'flat',P:f=>[
+  B(0,0,0,16,16,1,'accent'),B(2,2,1,12,12,1,'cream'),B(4,4,2,8,8,1,'accent',{s:.95})]});
+def({id:'karpetBulat',cat:'dekor',name:'Karpet Bulat',fw:2,fd:2,layer:'flat',P:f=>[
+  C(8,8,0,7.5,1,'accent'),C(8,8,1,6,1,'cream'),C(8,8,2,3.5,1,'accent',{s:.95})]});
+def({id:'kucing',cat:'dekor',name:'Kucing',fw:1,fd:1,frames:2,fms:900,P:f=>[
+  B(2,2,0,4,4,5,'#d8964e'),B(2,3,5,4,4,4,'#d8964e'),B(2,3,9,1,1,2,'#b97834'),B(5,3,9,1,1,2,'#b97834'),
+  B(3,7,7,1,1,1,'black'),B(5,7,7,1,1,1,'black'),B(4,7,6,1,1,1,'#e8a0a0'),B(2,1,3,4,1,2,'#b97834'),
+  f?B(6,5,0,1,1,6,'#b97834'):B(6,5,0,1,1,4,'#b97834'),f?B(7,5,5,1,1,1,'#b97834'):B(6,6,0,1,1,1,'#b97834')]});
+def({id:'vinyl',cat:'dekor',name:'Piringan Hitam',fw:1,fd:1,P:f=>[
+  B(0,1,0,8,6,9,'wood'),B(0,1,9,8,6,1,'wood2'),C(3.5,4,10,2.6,1,'black'),C(3.5,4,11,.9,1,'accent'),B(6,2,11,1,3,1,'metal')]});
+def({id:'standSign',cat:'dekor',name:'Papan Standing',fw:1,fd:1,P:f=>[
+  B(1,3,0,6,3,2,'wood2'),B(1,3,2,6,1,18,'#26332f'),B(0,3,20,8,1,1,'wood'),
+  B(2,4,15,4,1,1,'white'),B(2,4,12,3,1,1,'white'),B(2,4,9,4,1,1,'white'),B(2,4,6,2,1,1,'gold')]});
+
+/* --- Hiasan dinding (digambar datar lalu di-skew) --- */
+const FONT={A:'010101111101101',B:'110101110101110',C:'011100100100011',D:'110101101101110',E:'111100110100111',F:'111100110100100',G:'011100101101011',H:'101101111101101',I:'111010010010111',J:'001001001101010',K:'101101110101101',L:'100100100100111',M:'101111111101101',N:'110101101101101',O:'010101101101010',P:'110101110100100',R:'110101110101101',S:'011100010001110',T:'111010010010010',U:'101101101101111',V:'101101101101010',X:'101101010101101',Y:'101101010010010',Z:'111001010100111'};
+function text(g,s,x,y,c){g.fillStyle=c;for(const ch of s){const gl=FONT[ch];if(gl){for(let i=0;i<15;i++)if(gl[i]==='1')g.fillRect(x+(i%3),y+Math.floor(i/3),1,1);}x+=4;}}
+function line(g,x0,y0,x1,y1,c){x0=Math.round(x0);y0=Math.round(y0);x1=Math.round(x1);y1=Math.round(y1);const dx=Math.abs(x1-x0),dy=Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1;let e=dx-dy;g.fillStyle=c;for(;;){g.fillRect(x0,y0,1,1);if(x0===x1&&y0===y1)break;const e2=2*e;if(e2>-dy){e-=dy;x0+=sx;}if(e2<dx){e+=dx;y0+=sy;}}}
+function sky(g,x,y,w,h,night,seed){
+  if(night){
+    ['#0f1535','#162046','#1d2a5a'].forEach((c,i)=>R(g,x,y+Math.floor(h*i/3),w,Math.ceil(h/3),c));
+    for(let i=0;i<6;i++)R(g,x+Math.floor(hash(i,seed,1)*(w-2)),y+Math.floor(hash(i,seed,2)*(h-6)),1,1,'#fff6c8');
+    R(g,x+w-9,y+3,5,5,'#f6efc0');R(g,x+w-7,y+2,4,4,'#162046');
+  }else{
+    ['#8fd2ef','#a7dcf2','#c4e8f6'].forEach((c,i)=>R(g,x,y+Math.floor(h*i/3),w,Math.ceil(h/3),c));
+    R(g,x+3,y+4,7,2,'#fff');R(g,x+5,y+3,5,1,'#fff');R(g,x+w-13,y+9,8,2,'#fff');R(g,x+w-11,y+8,5,1,'#fff');
+    R(g,x,y+h-4,w,4,'#7cb86a');R(g,x+4,y+h-6,6,2,'#5f9c55');
+  }
+}
+const winDraw=panes=>(g,w,h,o)=>{
+  const th=THEMES[o.theme];
+  R(g,0,0,w,h-3,th.wood2);sky(g,2,2,w-4,h-9,o.night,w);
+  for(let i=1;i<panes;i++){const x=Math.round(i*(w-4)/panes)+2;R(g,x-1,2,2,h-9,th.wood2);}
+  R(g,2,Math.round((h-9)/2)+1,w-4,2,th.wood2);
+  R(g,0,h-4,w,4,shade(th.wood,1.1));R(g,0,h-4,w,1,'rgba(255,255,255,.4)');
+};
+def({id:'jendela',cat:'dinding',name:'Jendela',wall:true,wt:2,ht:42,elev:28,draw:winDraw(2)});
+def({id:'jendelaBesar',cat:'dinding',name:'Jendela Besar',wall:true,wt:3,ht:54,elev:22,draw:winDraw(3)});
+def({id:'pintu',cat:'dinding',name:'Pintu Kaca',wall:true,wt:2,ht:70,elev:0,draw:(g,w,h,o)=>{
+  const th=THEMES[o.theme],gh=Math.round(h*.62);
+  R(g,0,0,w,h,th.wood2);R(g,2,2,w-4,gh,o.night?'#1c2a4a':'#a9d8e8');
+  for(let i=0;i<5;i++)R(g,5+i*2,6+i*5,3,1,'rgba(255,255,255,.45)');
+  R(g,2,gh+4,w-4,h-gh-6,th.wood);R(g,5,gh+7,w-10,h-gh-12,shade(th.wood,.92));
+  R(g,w-7,Math.round(h*.55),2,6,'#e6b84a');R(g,w/2-5,9,10,6,'#d94a3c');R(g,w/2-4,10,8,1,'#fff');R(g,w/2-4,12,8,2,'#f4c3bb');
+}});
+def({id:'lukisan1',cat:'dinding',name:'Lukisan Abstrak',wall:true,wt:1,ht:22,elev:44,draw:(g,w,h,o)=>{
+  const th=THEMES[o.theme];R(g,0,0,w,h,'#4d3426');R(g,1,1,w-2,h-2,'#f4ead6');
+  R(g,3,3,5,8,th.accent);R(g,8,6,4,12,'#3d6aa8');R(g,5,13,6,4,'#e6b84a');R(g,10,3,3,2,th.fabric);
+}});
+def({id:'lukisan2',cat:'dinding',name:'Lukisan Senja',wall:true,wt:2,ht:22,elev:44,draw:(g,w,h,o)=>{
+  R(g,0,0,w,h,'#4d3426');R(g,2,2,w-4,h-4,'#f6c78c');R(g,2,2,w-4,5,'#f0a878');R(g,20,6,5,5,'#fff0b0');
+  for(let y=0;y<8;y++)R(g,6-y+2,11+y-0,1+2*y,1,'#5b4a6a');
+  for(let y=0;y<6;y++)R(g,16-y,13+y,1+2*y,1,'#6f5a7e');
+  R(g,2,17,w-4,3,'#5d8a4e');
+}});
+def({id:'poster',cat:'dinding',name:'Poster Kopi',wall:true,wt:1,ht:28,elev:40,draw:(g,w,h,o)=>{
+  const th=THEMES[o.theme];R(g,1,0,w-2,h,'#fff8e8');R(g,2,1,w-4,h-2,th.accent);
+  R(g,5,11,6,7,'#fff8e8');R(g,11,12,2,4,'#fff8e8');R(g,12,13,1,2,th.accent);R(g,4,19,8,1,'#fff8e8');
+  R(g,6,6,1,3,'#fff8e8');R(g,9,5,1,4,'#fff8e8');R(g,5,22,6,1,'#fff8e8');R(g,6,24,4,1,'#fff8e8');
+}});
+def({id:'jam',cat:'dinding',name:'Jam Dinding',wall:true,wt:1,ht:16,elev:56,clock:true,draw:(g,w,h,o)=>{
+  for(let y=0;y<16;y++)for(let x=0;x<16;x++){const d=Math.hypot(x-7.5,y-7.5);if(d<=8)R(g,x,y,1,1,d>6.6?'#4d3426':'#f6efe0');}
+  R(g,7,2,2,1,'#4d3426');R(g,7,13,2,1,'#4d3426');R(g,2,7,1,2,'#4d3426');R(g,13,7,1,2,'#4d3426');
+  const m=o.f%60,hr=(o.f/60)%12,am=m/60*Math.PI*2,ah=hr/12*Math.PI*2;
+  line(g,7.5,7.5,7.5+Math.sin(am)*5,7.5-Math.cos(am)*5,'#3a281f');line(g,7.5,7.5,7.5+Math.sin(ah)*3.2,7.5-Math.cos(ah)*3.2,'#3a281f');R(g,7,7,2,2,'#d94a3c');
+}});
+const neon=(txt,col,dim)=>(g,w,h,o)=>{
+  R(g,0,1,w,h-2,'#1b1a24');R(g,1,0,w-2,h,'#1b1a24');
+  const tw=txt.length*4-1,x0=Math.floor((w-tw)/2),y0=Math.floor((h-5)/2),c=hex2rgb(col);
+  const gl='rgba('+c[0]+','+c[1]+','+c[2]+',.35)';
+  [[-1,0],[1,0],[0,-1],[0,1]].forEach(([dx,dy])=>text(g,txt,x0+dx,y0+dy,gl));
+  text(g,txt,x0,y0,o.f?dim:col);
+  R(g,1,1,w-2,1,gl);R(g,1,h-2,w-2,1,gl);
+};
+def({id:'neonCoffee',cat:'dinding',name:'Neon COFFEE',wall:true,wt:2,ht:14,elev:52,frames:2,fms:1400,light:{r:34,color:'#ff7ab8'},draw:neon('COFFEE','#ff7ab8','#ff4f9a')});
+def({id:'neonOpen',cat:'dinding',name:'Neon OPEN',wall:true,wt:2,ht:14,elev:52,frames:2,fms:1100,light:{r:30,color:'#6fe6ff'},draw:neon('OPEN','#6fe6ff','#3fc4ec')});
+def({id:'neonCafe',cat:'dinding',name:'Neon CAFE',wall:true,wt:2,ht:14,elev:52,frames:2,fms:1700,light:{r:30,color:'#ffc15a'},draw:neon('CAFE','#ffc15a','#ffa72a')});
+def({id:'rakDinding',cat:'dinding',name:'Rak Dinding',wall:true,wt:2,ht:18,elev:44,draw:(g,w,h,o)=>{
+  const th=THEMES[o.theme];
+  R(g,0,h-3,w,3,'#8a5c36');R(g,0,h-1,w,1,'#5e3c22');R(g,3,h-3,2,2,'#5e3c22');R(g,w-5,h-3,2,2,'#5e3c22');
+  R(g,4,h-8,5,5,th.pot);R(g,3,h-13,7,6,'#4d9b48');R(g,5,h-16,3,4,'#357a3c');
+  R(g,14,h-8,4,5,'#f6f4ef');R(g,18,h-7,1,3,'#f6f4ef');R(g,22,h-10,2,7,'#cc4a3c');R(g,24,h-9,2,6,'#e6b84a');R(g,26,h-11,2,8,'#3d6aa8');
+}});
+def({id:'lampuDinding',cat:'dinding',name:'Lampu Dinding',wall:true,wt:1,ht:18,elev:46,light:{r:40,color:'#ffd27a'},draw:(g,w,h,o)=>{
+  R(g,6,0,4,3,'#34333b');R(g,7,3,2,5,'#34333b');R(g,3,8,10,7,'#f8e3a6');R(g,4,9,8,5,'#ffeaa0');R(g,3,15,10,2,'#34333b');
+}});
+def({id:'tanamanGantung',cat:'dinding',name:'Tanaman Gantung',wall:true,wt:1,ht:32,elev:40,draw:(g,w,h,o)=>{
+  const th=THEMES[o.theme];
+  R(g,7,0,2,5,'#8a5c36');R(g,4,5,8,5,th.pot);R(g,5,10,6,1,th.wood2);
+  for(let i=0;i<9;i++){const x=3+(i%3)*4+((i*7)%3),y=9+i*2;R(g,x,y,3,2,i%2?'#4d9b48':'#357a3c');}
+  R(g,3,22,2,3,'#4d9b48');R(g,11,24,2,4,'#357a3c');R(g,8,26,2,3,'#4d9b48');
+}});
+
+/* ================= Gelombang 2: vibe kedai Jaksel ================= */
+const legs=(h,c,i,o)=>{const a=i,b=7-i;return [B(a,a,0,1,1,h,c,o),B(b,a,0,1,1,h,c,o),B(a,b,0,1,1,h,c,o),B(b,b,0,1,1,h,c,o)];};
+const ribbed=n=>{const L=8*n,p=[B(0,0,0,L,8,3,'dark'),B(0,0,3,L-1,7,CT-5,'dark'),B(0,0,CT-2,L,8,2,'top')];
+  for(let i=1;i<L-1;i++)p.push(B(i,7,3,1,1,CT-5,i%2?'wood':'wood2'));p.push(B(L-1,1,3,1,6,CT-5,'wood2'));return p;};
+
+/* --- Barista: tambahan --- */
+def({id:'counterRibbed1',cat:'barista',name:'Counter Fluted',fw:1,fd:1,P:f=>ribbed(1)});
+def({id:'counterRibbed2',cat:'barista',name:'Counter Fluted Panjang',fw:2,fd:1,P:f=>ribbed(2)});
+def({id:'brewBar',cat:'barista',name:'Brew Bar V60',fw:1,fd:1,P:f=>counterBase(1).concat([
+  C(3.5,3.5,CT,1.4,4,'coffee'),C(3.5,3.5,CT+4,1.9,2,'black'),C(3.5,3.5,CT+6,1.3,1,'cream'),
+  C(6.3,5.4,CT,1.1,4,'black'),C(6.3,5.4,CT+4,.6,1,'metal'),B(4,5,CT+3,2,1,1,'black'),B(7,5,CT+1,1,1,3,'black')])});
+def({id:'kulkasRetro',cat:'barista',name:'Kulkas Retro',fw:1,fd:1,P:f=>[
+  B(0,0,0,8,8,2,'dark'),B(0,0,2,8,7,34,'accent'),B(0,0,36,8,8,1,'accent',{s:1.12}),
+  B(0,7,2,8,1,17,'accent',{s:1.06}),B(0,7,20,8,1,16,'accent',{s:1.06}),B(6,8,10,1,1,6,'metal'),B(6,8,27,1,1,6,'metal'),B(3,8,33,2,1,1,'metal')]});
+def({id:'rakMerch',cat:'barista',name:'Rak Biji Kopi',fw:1,fd:1,P:f=>{
+  const cols=['cream','accent','black','gold'],fill=[];
+  [1,13,25].forEach((z,k)=>{for(let i=0;i<3;i++){fill.push(B(1+i*2,1,z,2,3,8,cols[(i+k)%4]));fill.push(B(1+i*2,4,z+3,2,1,3,'white'));}});
+  return shelf(fill);}});
+
+/* --- Dine-in: meja --- */
+def({id:'mejaTulip',cat:'dine',name:'Meja Tulip',fw:1,fd:1,P:f=>[
+  C(4,4,0,2.5,1,'white'),C(4,4,1,.9,10,'white'),C(4,4,11,4.4,2,'top'),C(3,3.5,13,.8,3,'glass',{a:.6}),B(3,3,16,1,1,2,'accent'),C(5.5,5,13,1,2,'white')]});
+def({id:'mejaMarmer',cat:'dine',name:'Meja Marmer Bistro',fw:1,fd:1,P:f=>[
+  C(4,4,0,2.6,1,'dark'),C(4,4,1,.7,10,'dark'),B(0,0,11,8,8,2,'top'),B(0,0,11,8,1,1,'metal',{s:1.1}),
+  C(2.5,2.5,13,1,2,'white'),C(5.5,5,13,.9,1,'coffee')]});
+def({id:'mejaWarkop',cat:'dine',name:'Meja Warkop',fw:2,fd:1,P:f=>[
+  B(1,1,0,1,1,11,'metal'),B(14,1,0,1,1,11,'metal'),B(1,6,0,1,1,11,'metal'),B(14,6,0,1,1,11,'metal'),
+  B(0,0,10,16,8,1,'dark'),B(0,0,11,16,8,2,'top'),C(4,4,13,.9,3,'coffee'),C(7,3,13,.9,3,'glass',{a:.6}),B(11,2,13,4,4,1,'white'),C(13,4,14,1,1,'gold')]});
+def({id:'mejaKopi',cat:'dine',name:'Meja Kopi Rendah',fw:2,fd:1,P:f=>[
+  B(1,1,0,1,6,6,'black'),B(14,1,0,1,6,6,'black'),B(0,0,6,16,8,2,'wood'),
+  B(2,2,8,5,4,1,'accent'),B(3,2,9,4,4,1,'cream'),C(11,4,8,1,2,'white'),C(13.5,5,8,.9,1,'coffee')]});
+def({id:'barMeja',cat:'dine',name:'Meja Bar Panjang',fw:3,fd:1,P:f=>[
+  B(2,1,0,1,3,24,'black'),B(21,1,0,1,3,24,'black'),B(11,1,0,2,3,24,'black'),B(2,3,6,20,1,1,'metal'),B(0,0,24,24,5,2,'wood'),
+  B(5,1,26,5,3,1,'metal'),B(5,1,27,5,1,4,'dark'),B(6,2,28,3,1,2,'screen'),C(14,3,26,.9,2,'white'),C(17,2,26,.9,2,'white'),B(19,1,26,3,3,1,'accent')]});
+def({id:'komunal',cat:'dine',name:'Meja Komunal',fw:3,fd:2,P:f=>[
+  B(2,5,0,2,6,11,'wood2'),B(20,5,0,2,6,11,'wood2'),B(0,4,11,24,8,2,'wood'),
+  B(1,0,0,1,3,7,'wood2'),B(22,0,0,1,3,7,'wood2'),B(0,0,7,24,4,2,'wood'),
+  B(1,13,0,1,3,7,'wood2'),B(22,13,0,1,3,7,'wood2'),B(0,12,7,24,4,2,'wood'),
+  C(12,8,13,1.3,3,'pot'),B(10,7,16,4,2,3,'plant'),B(11,7,19,2,2,2,'plant2'),C(5,7,13,.9,2,'white'),C(18,9,13,.9,2,'white'),B(7,9,13,3,3,1,'accent')]});
+def({id:'lesehan',cat:'dine',name:'Meja Lesehan',fw:2,fd:2,P:f=>[
+  B(5,5,0,1,1,5,'wood2'),B(10,5,0,1,1,5,'wood2'),B(5,10,0,1,1,5,'wood2'),B(10,10,0,1,1,5,'wood2'),B(4,4,5,8,8,2,'wood'),
+  C(8,8,7,1.4,2,'white'),C(6,6,7,.8,1,'white'),C(10,10,7,.8,1,'white'),
+  B(5,0,0,6,3,2,'fabric'),B(5,13,0,6,3,2,'accent'),B(0,5,0,3,6,2,'accent'),B(13,5,0,3,6,2,'fabric')]});
+
+/* --- Dine-in: kursi & santai --- */
+def({id:'kursiRotan',cat:'dine',name:'Kursi Rotan',fw:1,fd:1,P:f=>[
+  ...legs(7,'wood2',1),B(1,1,7,6,6,2,'wood'),B(2,2,9,4,4,1,'fabric'),
+  B(1,1,9,6,1,5,'wood'),B(0,1,14,8,1,5,'wood',{s:1.06}),B(1,1,19,6,1,2,'wood',{s:1.1}),
+  B(2,2,10,1,1,8,'wood2'),B(4,2,10,1,1,8,'wood2'),B(6,2,10,1,1,8,'wood2')]});
+def({id:'kursiPlastik',cat:'dine',name:'Kursi Plastik Retro',fw:1,fd:1,P:f=>[
+  ...legs(7,'accent',1,{s:.8}),B(1,1,7,6,6,1,'accent'),
+  B(1,1,8,1,1,9,'accent'),B(3,1,8,2,1,9,'accent'),B(6,1,8,1,1,9,'accent'),B(1,1,17,6,1,1,'accent',{s:1.1})]});
+def({id:'kursiShell',cat:'dine',name:'Kursi Shell',fw:1,fd:1,P:f=>[
+  B(2,2,0,1,1,8,'wood'),B(5,2,0,1,1,8,'wood'),B(2,5,0,1,1,8,'wood'),B(5,5,0,1,1,8,'wood'),
+  C(4,4.5,8,3.2,3,'accent'),B(1,1,11,6,1,5,'accent',{s:.95}),B(2,1,16,4,1,1,'accent',{s:1.08})]});
+def({id:'stoolSandaran',cat:'dine',name:'Stool Sandaran',fw:1,fd:1,P:f=>[
+  ...legs(15,'black',1),B(1,6,6,6,1,1,'metal'),
+  B(1,1,15,6,6,2,'wood'),B(1,1,17,6,1,6,'wood2')]});
+def({id:'dingklik',cat:'dine',name:'Dingklik',fw:1,fd:1,P:f=>[
+  ...legs(6,'wood2',2),B(1,1,6,6,6,2,'wood')]});
+def({id:'bangkuPanjang',cat:'dine',name:'Bangku Panjang',fw:2,fd:1,P:f=>[
+  B(1,1,0,2,6,7,'wood2'),B(13,1,0,2,6,7,'wood2'),B(0,0,7,16,8,2,'wood'),B(2,2,9,12,4,1,'fabric')]});
+def({id:'sofa3',cat:'dine',name:'Sofa 3 Dudukan',fw:3,fd:1,P:f=>[
+  B(0,0,0,24,8,3,'wood2'),B(0,0,3,24,8,4,'fabric'),B(0,0,7,24,2,8,'fabric',{s:.9}),B(0,0,7,2,8,4,'fabric',{s:.95}),B(22,0,7,2,8,4,'fabric',{s:.95}),
+  B(2,2,7,7,6,3,'fabric',{s:1.08}),B(9,2,7,6,6,3,'fabric',{s:1.08}),B(15,2,7,7,6,3,'fabric',{s:1.08}),B(3,2,10,2,2,3,'accent'),B(19,2,10,2,2,3,'gold')]});
+def({id:'beanbag',cat:'dine',name:'Bean Bag',fw:1,fd:1,P:f=>[
+  C(4,4,0,3.5,4,'fabric'),C(4,4.4,4,3,3,'fabric',{s:1.06}),C(4,3,6,2.4,5,'fabric',{s:.96}),C(4,4.8,7,1.9,1,'fabric',{s:1.15})]});
+def({id:'papasan',cat:'dine',name:'Kursi Papasan',fw:1,fd:1,P:f=>[
+  C(4,4,0,2.2,1,'wood2'),C(4,4,1,3.4,3,'wood2'),C(4,4,4,4,4,'wood'),C(4,4,8,4.3,2,'wood',{s:1.1}),C(4,4,10,3.5,2,'fabric',{s:1.06}),B(3,3,12,3,3,2,'accent')]});
+
+/* --- Dekor: tanaman --- */
+def({id:'fiddle',cat:'dekor',name:'Fiddle Leaf Fig',fw:1,fd:1,P:f=>[
+  C(4,4,0,2.7,7,'cream'),C(4,4,7,.5,20,'brown'),
+  B(1,2,22,3,3,3,'plant'),B(4,1,24,3,3,3,'plant2'),B(1,4,27,3,3,3,'plant2'),B(4,3,29,3,3,3,'plant'),B(2,2,33,3,3,3,'plant'),B(3,4,18,3,3,3,'plant')]});
+def({id:'palem',cat:'dekor',name:'Palem Areca',fw:1,fd:1,P:f=>{
+  const p=[C(4,4,0,2.8,7,'pot'),C(4,4,7,2.9,1,'pot',{s:1.1}),C(4,4,8,.4,10,'brown'),B(3,3,17,2,2,3,'plant'),B(3,3,20,2,2,5,'plant2')];
+  [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]].forEach(([dx,dy],i)=>{
+    p.push(B(3+dx*2,3+dy*2,17,2,2,1,i%2?'plant2':'plant'),B(3+dx*3,3+dy*3,14,2,2,1,i%2?'plant':'plant2'));});
+  return p;}});
+def({id:'kaktus',cat:'dekor',name:'Kaktus',fw:1,fd:1,P:f=>[
+  C(4,4,0,2.2,5,'pot'),C(4,4,5,1.6,13,'plant'),B(2,3,9,2,2,1,'plant'),C(2.6,4,9,.9,6,'plant2'),B(5,3,11,2,2,1,'plant'),C(6.3,4,11,.9,5,'plant2'),B(4,4,18,1,1,1,'accent')]});
+def({id:'sansevieria',cat:'dekor',name:'Lidah Mertua',fw:1,fd:1,P:f=>[
+  C(4,4,0,2.5,6,'pot'),B(2,3,6,1,1,13,'plant2'),B(3,4,6,1,1,16,'plant'),B(4,3,6,1,1,19,'plant2'),B(5,4,6,1,1,14,'plant'),B(4,5,6,1,1,11,'plant2'),B(3,2,6,1,1,10,'plant')]});
+def({id:'hangPlant',cat:'dekor',name:'Tanaman Menjuntai',fw:1,fd:1,layer:'air',P:f=>[
+  C(4,4,40,.3,48,'dark'),C(4,4,30,2.2,4,'pot'),C(4,4,34,2.4,1,'pot',{s:1.1}),B(2,2,35,4,4,3,'plant'),B(1,3,36,3,3,2,'plant2'),
+  B(1,2,24,1,1,11,'plant2'),B(6,3,22,1,1,13,'plant'),B(3,6,25,1,1,10,'plant'),B(5,1,26,1,1,9,'plant2'),B(2,6,18,1,1,12,'plant2')]});
+
+/* --- Dekor: lampu --- */
+def({id:'lampuRotan',cat:'dekor',name:'Lampu Rotan',fw:1,fd:1,layer:'air',light:{x:4,y:4,z:36,r:56},P:f=>[
+  C(4,4,34,1.5,1,'#ffeaa0'),C(4,4,35,3.6,4,'wood'),C(4,4,39,2.4,3,'wood',{s:1.1}),C(4,4,42,.9,2,'wood2'),C(4,4,44,.35,44,'dark')]});
+def({id:'lampuGlobe',cat:'dekor',name:'Lampu Globe',fw:1,fd:1,layer:'air',light:{x:4,y:4,z:36,r:52,color:'#fff0c0'},P:f=>[
+  C(4,4,33,1.8,1,'white',{s:1.1}),C(4,4,34,2.8,2,'white'),C(4,4,36,3.2,3,'white',{s:1.05}),C(4,4,39,2.8,2,'white'),C(4,4,41,1.6,1,'white',{s:.95}),C(4,4,42,.35,46,'dark')]});
+
+/* --- Dekor: musik & buku --- */
+def({id:'turntable',cat:'dekor',name:'Meja Turntable',fw:2,fd:1,frames:2,fms:420,P:f=>[
+  B(1,1,0,2,6,8,'wood2'),B(13,1,0,2,6,8,'wood2'),B(0,0,8,16,8,4,'wood'),
+  B(3,1,12,10,6,2,'black'),C(7,4,14,2.4,1,'#26262c'),C(7,4,15,.8,1,'accent'),B(f?7:9,f?6:4,15,1,1,1,'white'),
+  B(0,1,12,3,6,10,'wood2'),B(13,1,12,3,6,10,'wood2'),B(0,7,14,3,1,4,'#222228'),B(13,7,14,3,1,4,'#222228'),B(1,7,20,1,1,1,'#ddd'),B(14,7,20,1,1,1,'#ddd')]});
+def({id:'kratePlat',cat:'dekor',name:'Crate Piringan Hitam',fw:1,fd:1,P:f=>{
+  const cols=['accent','fabric','gold','white','red','#3d6aa8'],p=[B(0,1,0,8,6,6,'wood2'),B(0,6,0,8,1,5,'wood')];
+  cols.forEach((c,i)=>p.push(B(1+i,2,6,1,4,5+((i*3)%4),c)));return p;}});
+def({id:'rakIndustri',cat:'dekor',name:'Rak Besi Industrial',fw:2,fd:1,P:f=>{
+  const p=[B(0,0,0,1,4,40,'dark'),B(15,0,0,1,4,40,'dark')],bk=['red','accent','gold','#3d6aa8','cream'];
+  [0,13,26,39].forEach(z=>p.push(B(0,0,z,16,4,1,'wood')));
+  p.push(C(4,2,1,1.3,3,'pot'),B(3,1,4,2,2,3,'plant'),B(8,1,1,5,3,2,'accent'),B(9,1,3,4,3,2,'cream'),C(13,2,1,1.3,3,'wood2'));
+  p.push(C(3,2,14,1,3,'glass',{a:.55}),C(6,2,14,1,3,'glass',{a:.55}));bk.forEach((c,i)=>p.push(B(9+i,1,14,1,3,5+(i%2)*2,c)));
+  p.push(C(3,2,27,1,1,'black'),C(3,2,28,.3,5,'black'),C(3,2,33,1.6,3,'#f8e3a6'),C(10.5,2,27,1.5,3,'pot'),B(9,1,30,3,2,3,'plant'),B(10,1,33,2,2,2,'plant2'));
+  return p;}});
+def({id:'tumpukBuku',cat:'dekor',name:'Tumpukan Buku',fw:1,fd:1,P:f=>[
+  B(1,1,0,6,5,2,'accent'),B(2,2,2,5,4,2,'cream'),B(1,1,4,6,5,2,'fabric'),B(2,2,6,4,4,1,'gold'),C(4,4,7,1.1,2,'white')]});
+def({id:'jukebox',cat:'dekor',name:'Jukebox Retro',fw:1,fd:1,light:{x:4,y:6,z:16,r:36,color:'#ffcf7a'},P:f=>[
+  B(0,0,0,8,8,3,'dark'),B(1,1,3,6,6,21,'accent'),B(2,7,9,4,1,11,'#ffd27a'),B(2,7,21,4,1,2,'dark'),B(1,7,6,1,1,16,'metal'),B(6,7,6,1,1,16,'metal'),
+  B(2,2,24,4,4,2,'accent',{s:1.1}),B(3,3,26,2,2,1,'gold')]});
+
+/* --- Dekor: karpet & partisi --- */
+def({id:'karpetPersia',cat:'dekor',name:'Karpet Persia',fw:3,fd:2,layer:'flat',P:f=>[
+  B(0,0,0,24,16,1,'fabric'),B(1,1,1,22,14,1,'cream'),B(2,2,2,20,12,1,'accent'),B(4,4,3,16,8,1,'fabric'),B(10,6,4,4,4,1,'cream'),B(6,6,4,2,4,1,'gold'),B(16,6,4,2,4,1,'gold')]});
+def({id:'karpetJute',cat:'dekor',name:'Karpet Jute Bulat',fw:2,fd:2,layer:'flat',P:f=>[
+  C(8,8,0,7.6,1,'wood'),C(8,8,1,6.2,1,'wood',{s:1.08}),C(8,8,2,4.8,1,'wood',{s:.95}),C(8,8,3,3,1,'wood',{s:1.08})]});
+def({id:'karpetLari',cat:'dekor',name:'Karpet Lari',fw:3,fd:1,layer:'flat',P:f=>{
+  const p=[B(0,0,0,24,8,1,'cream')];for(let i=0;i<6;i++)p.push(B(i*4,0,1,2,8,1,i%2?'accent':'fabric'));return p;}});
+def({id:'partisiKayu',cat:'dekor',name:'Partisi Kayu Slat',fw:2,fd:1,P:f=>{
+  const p=[B(0,3,0,16,2,2,'wood2'),B(0,3,2,2,2,36,'wood2'),B(14,3,2,2,2,36,'wood2'),B(0,3,38,16,2,2,'wood2'),B(2,2,19,12,1,1,'wood2')];
+  for(let x=3;x<14;x+=2)p.push(B(x,3,2,1,2,36,'wood'));return p;}});
+def({id:'partisiRoster',cat:'dekor',name:'Partisi Roster',fw:2,fd:1,P:f=>{
+  const p=[B(0,3,0,16,2,30,'top'),B(0,3,30,16,2,1,'top',{s:1.1})];
+  for(let i=0;i<4;i++)for(let j=0;j<5;j++)p.push(B(1+i*4,5,3+j*5,2,1,2,'dark',{s:.6}));return p;}});
+
+/* --- Hiasan dinding: tambahan --- */
+def({id:'neonNgopi',cat:'dinding',name:'Neon NGOPI',wall:true,wt:2,ht:14,elev:52,frames:2,fms:1500,light:{r:34,color:'#9dff8a'},draw:neon('NGOPI','#9dff8a','#6be85a')});
+def({id:'neonVibes',cat:'dinding',name:'Neon GOOD VIBES',wall:true,wt:3,ht:14,elev:52,frames:2,fms:1300,light:{r:38,color:'#c9a4ff'},draw:neon('GOOD VIBES','#c9a4ff','#a97bff')});
+def({id:'jendelaArch',cat:'dinding',name:'Jendela Lengkung',wall:true,wt:2,ht:58,elev:16,draw:(g,w,h,o)=>{
+  const th=THEMES[o.theme],r=w/2;
+  const inA=(x,y,ins)=>{const xx=x+.5,yy=y+.5;if(xx<ins||xx>w-ins||yy<ins||yy>h-3)return false;return yy<r?Math.hypot(xx-r,yy-r)<=r-ins:true;};
+  R(g,0,r,w,h-r,th.wood2);sky(g,2,2,w-4,h-9,o.night,w+3);
+  for(let y=0;y<r;y++)for(let x=0;x<w;x++){if(!inA(x,y,0))g.clearRect(x,y,1,1);else if(!inA(x,y,2))R(g,x,y,1,1,th.wood2);}
+  R(g,r-1,2,2,h-9,th.wood2);R(g,2,r+6,w-4,2,th.wood2);
+  R(g,0,h-4,w,4,shade(th.wood,1.1));R(g,0,h-4,w,1,'rgba(255,255,255,.4)');}});
+def({id:'pintuKayu',cat:'dinding',name:'Pintu Kayu Retro',wall:true,wt:2,ht:70,elev:0,draw:(g,w,h,o)=>{
+  const th=THEMES[o.theme];
+  R(g,0,0,w,h,th.wood2);R(g,2,2,w-4,h-2,th.wood);R(g,5,5,w-10,20,shade(th.wood,.88));
+  R(g,7,7,w-14,16,o.night?'#1c2a4a':'#a9d8e8');R(g,7,7,w-14,1,'rgba(255,255,255,.5)');R(g,5,30,w-10,32,shade(th.wood,.9));
+  const x0=Math.floor((w-17)/2);R(g,w/2,26,1,4,'#34333b');R(g,x0,30,17,9,'#f4ead3');text(g,'BUKA',x0+1,32,'#c0392b');
+  R(g,w-7,44,2,5,'#e6b84a');}});
+def({id:'cerminBulat',cat:'dinding',name:'Cermin Bulat',wall:true,wt:1,ht:22,elev:38,draw:(g,w,h,o)=>{
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const d=Math.hypot(x+.5-8,y+.5-11);if(d>8)continue;
+    R(g,x,y,1,1,d>6.6?'#2a2a30':(Math.abs((x-8)-(y-11)*.9+2)<1.3?'#f2fbff':((x+y)>19?'#b3d0db':'#cde4ec')));}}});
+def({id:'cerminArch',cat:'dinding',name:'Cermin Lengkung',wall:true,wt:1,ht:40,elev:26,draw:(g,w,h,o)=>{
+  const r=8,inA=(x,y,ins)=>{const xx=x+.5,yy=y+.5;if(xx<ins||xx>w-ins||yy<ins||yy>h-ins)return false;return yy<r?Math.hypot(xx-r,yy-r)<=r-ins:true;};
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){if(!inA(x,y,0))continue;
+    R(g,x,y,1,1,!inA(x,y,2)?'#2a2a30':(Math.abs((x-8)+(y-10)*.7-1)<1.3?'#f2fbff':((x+y)>26?'#b3d0db':'#cde4ec')));}}});
+def({id:'frameTrio',cat:'dinding',name:'Frame Trio',wall:true,wt:2,ht:14,elev:46,draw:(g,w,h,o)=>{
+  const th=THEMES[o.theme];[1,12,23].forEach((x,i)=>{R(g,x,1,9,12,'#2a2a30');R(g,x+1,2,7,10,'#f4ead6');
+    if(i===0){R(g,x+2,3,5,5,th.accent);R(g,x+3,9,3,2,'#2a2a30');}
+    else if(i===1){for(let k=0;k<4;k++)R(g,x+2,3+k*2,5,1,k%2?'#3d6aa8':'#2a2a30');R(g,x+2,11,5,0,'#2a2a30');}
+    else{for(let yy=0;yy<7;yy++)for(let xx=0;xx<7;xx++)if(Math.hypot(xx-3,yy-3)<=2.6)R(g,x+1+xx,3+yy,1,1,'#e6b84a');R(g,x+2,10,5,1,th.fabric);}});}});
+def({id:'posterNgopi',cat:'dinding',name:'Poster Ngopi Dulu',wall:true,wt:2,ht:28,elev:38,draw:(g,w,h,o)=>{
+  const th=THEMES[o.theme];R(g,1,0,w-2,h,'#2a2a30');R(g,2,1,w-4,h-2,'#f4ead6');
+  text(g,'NGOPI',6,5,'#2a2a30');text(g,'DULU',8,11,th.accent);
+  R(g,10,18,10,6,'#2a2a30');R(g,20,19,3,3,'#2a2a30');R(g,21,20,1,1,'#f4ead6');R(g,11,17,8,1,th.accent);R(g,12,24,6,1,'#2a2a30');}});
+def({id:'rakApung',cat:'dinding',name:'Rak Apung',wall:true,wt:3,ht:20,elev:44,draw:(g,w,h,o)=>{
+  const th=THEMES[o.theme];R(g,0,h-3,w,3,'#8a5c36');R(g,0,h-1,w,1,'#5e3c22');
+  R(g,3,h-6,10,3,'#cc4a3c');R(g,4,h-9,9,3,'#f6f4ef');R(g,3,h-12,8,3,'#3d6aa8');
+  R(g,18,h-8,6,5,th.pot);R(g,17,h-14,8,6,'#4d9b48');R(g,19,h-17,4,4,'#357a3c');
+  for(let y=0;y<14;y++)for(let x=0;x<14;x++){const d=Math.hypot(x+.5-7,y+.5-7);if(d<=6.5)R(g,28+x,h-17+y,1,1,d<2?th.accent:(d<2.6?'#fff':'#1e1c22'));}
+  R(g,43,h-7,4,4,'#f6f4ef');R(g,47,h-6,1,2,'#f6f4ef');}});
+def({id:'macrame',cat:'dinding',name:'Macrame',wall:true,wt:1,ht:34,elev:38,draw:(g,w,h,o)=>{
+  const rp='#efe3c8',sd='#cdbd98';
+  R(g,1,0,14,2,'#8a5c36');R(g,0,1,2,1,'#8a5c36');R(g,14,1,2,1,'#8a5c36');
+  [3,6,9,12].forEach((x,i)=>{R(g,x,2,1,22+(i%2)*4,rp);R(g,x+1,2,1,20+(i%2)*4,sd);});
+  for(let k=0;k<3;k++){const y=6+k*6;R(g,3+k,y,10-2*k,1,rp);R(g,3+k,y+1,10-2*k,1,sd);}
+  R(g,5,9,2,2,rp);R(g,9,9,2,2,rp);R(g,7,14,2,2,rp);
+  for(let x=3;x<=13;x++)R(g,x,24+(x%3),1,5+(x%2)*3,x%2?rp:sd);}});
+def({id:'piringRotan',cat:'dinding',name:'Piring Rotan',wall:true,wt:2,ht:24,elev:38,draw:(g,w,h,o)=>{
+  const plate=(cx,cy,r)=>{for(let y=0;y<h;y++)for(let x=0;x<w;x++){const d=Math.hypot(x+.5-cx,y+.5-cy);if(d<=r)R(g,x,y,1,1,d>r-1?'#8c6a3e':(Math.floor(d/1.6)%2?'#c9a36a':'#d8b57d'));}};
+  plate(9,12,8);plate(23,7,6);plate(24,18,4.5);}});
+def({id:'lampuArm',cat:'dinding',name:'Lampu Lengan',wall:true,wt:1,ht:20,elev:44,light:{r:44,color:'#ffd27a'},draw:(g,w,h,o)=>{
+  R(g,0,4,3,10,'#34333b');R(g,3,8,6,2,'#34333b');R(g,8,5,2,5,'#34333b');
+  R(g,7,4,8,2,'#34333b');R(g,6,6,10,3,'#4a4852');R(g,5,9,12,2,'#34333b');R(g,6,11,10,3,'#ffeaa0');R(g,8,14,6,1,'#ffeaa0');}});
+def({id:'acSplit',cat:'dinding',name:'AC Split',wall:true,wt:2,ht:12,elev:70,draw:(g,w,h,o)=>{
+  R(g,0,0,w,h-2,'#f2f1ec');R(g,0,h-3,w,3,'#d8d6cf');R(g,2,h-5,w-4,1,'#b8b6af');R(g,w-6,3,2,1,'#6be08a');R(g,4,3,10,1,'#e0ded8');R(g,0,0,w,1,'#ffffff');}});
+
+/* ---------------- lantai & dinding ---------------- */
+const rgb=hex2rgb;
+function woodFn(cols,seam){const cs=cols.map(rgb),sm=rgb(seam);return (a,b,A,B)=>{const p=Math.floor(B/2),off=hash(p,7)*16,s=Math.floor((A+off)/16),i=Math.floor(hash(p,s,3)*3);return (B-p*2<.5||(A+off)%16<.5)?sm:cs[i];};}
+const FLOORS={
+  kayu:{name:'Kayu Hangat',fn:woodFn(['#c88c55','#bd8049','#d29a62'],'#9d6a3c')},
+  kayugelap:{name:'Kayu Gelap',fn:woodFn(['#6b4a36','#5f4030','#765340'],'#3f2a1f')},
+  checker:{name:'Checker',fn:(()=>{const c1=rgb('#efe9dc'),c2=rgb('#2d2c33');return (a,b,A,B)=>((Math.floor(A/4)+Math.floor(B/4))&1)?c1:c2;})()},
+  beton:{name:'Beton',fn:(()=>{const c=rgb('#9a9a9c');return (a,b,A,B)=>{const n=hash(Math.floor(A*3),Math.floor(B*3)),f=(a<.45||b<.45)?.84:(.94+n*.12);return [c[0]*f,c[1]*f,c[2]*f];};})()},
+  terakota:{name:'Terakota',fn:(()=>{const cs=['#c4673f','#b95e38','#cc7048'].map(rgb),gr=rgb('#8a5033');return (a,b,A,B)=>{if(A%4<.5||B%4<.5)return gr;return cs[Math.floor(hash(Math.floor(A/4),Math.floor(B/4))*3)];};})()},
+  mint:{name:'Mint Retro',fn:(()=>{const c1=rgb('#9dd6c0'),c2=rgb('#eef4e6');return (a,b,A,B)=>((Math.floor(A/4)+Math.floor(B/4))&1)?c1:c2;})()},
+  marmer:{name:'Marmer',fn:(()=>{const c=rgb('#ece9e3'),v=rgb('#c6c2ba'),s=rgb('#d8d4cc');return (a,b,A,B)=>{if(a<.4||b<.4)return s;return Math.abs(Math.sin(A*.45+Math.sin(B*.37)*2.3))<.09?v:c;};})()}
+};
+const wbase=(g,w,h,c1,c2)=>{R(g,0,h-5,w,5,c1);R(g,0,h-6,w,1,c2);};
+const brick=(cols,mortar)=>(g,w,h)=>{R(g,0,0,w,h,mortar);const bh=5,bw=14;for(let r=0;r*bh<h-6;r++){const off=(r%2)*7;for(let x=-bw+off;x<w;x+=bw){R(g,x+1,r*bh+1,bw-1,bh-1,cols[Math.floor(hash(x+off+100,r)*cols.length)]);}}wbase(g,w,h,'#4a3a32','#2f2420');};
+const WALLS={
+  krem:{name:'Krem Polos',draw:(g,w,h)=>{R(g,0,0,w,h,'#efe0c2');for(let i=0;i<w*h/90;i++)R(g,Math.floor(hash(i,1)*w),Math.floor(hash(i,2)*(h-8)),1,1,'#e6d4b0');wbase(g,w,h,'#cdb892','#b39d78');}},
+  bata:{name:'Bata Merah',draw:brick(['#a9513a','#9b4632','#b45d43','#a24b36'],'#d9c7b0')},
+  putihbata:{name:'Bata Putih',draw:brick(['#f1efe9','#e9e6df','#f5f3ee'],'#cfcabf')},
+  sage:{name:'Sage & Panel',draw:(g,w,h)=>{R(g,0,0,w,h,'#a8bfa3');const t=h-30;R(g,0,t,w,30,'#f1eee4');R(g,0,t-1,w,2,'#d9d5c7');for(let x=0;x<w;x+=16)R(g,x,t+3,1,h-12,'#d9d5c7');wbase(g,w,h,'#8da38a','#6f8a6c');}},
+  navy:{name:'Navy Emas',draw:(g,w,h)=>{R(g,0,0,w,h,'#33405f');const y=Math.round(h*.5);R(g,0,y,w,1,'#d8b45a');R(g,0,y+3,w,1,'#a98a3e');wbase(g,w,h,'#202a45','#131a30');}},
+  kayu:{name:'Panel Kayu',draw:(g,w,h)=>{for(let x=0;x<w;x+=5){R(g,x,0,4,h,(x/5)%2?'#c9955f':'#bf8a55');R(g,x+4,0,1,h,'#8e6238');}wbase(g,w,h,'#7a5230','#5a3b22');}},
+  pink:{name:'Pink Pastel',draw:(g,w,h)=>{R(g,0,0,w,h,'#f5d2dc');for(let x=0;x<w;x+=12)R(g,x,0,5,h,'#fbe6ec');wbase(g,w,h,'#fff2f5','#e8bcc8');}},
+  konkrit:{name:'Beton Ekspos',draw:(g,w,h)=>{R(g,0,0,w,h,'#8e9296');for(let i=0;i<w*h/10;i++){R(g,Math.floor(hash(i,3)*w),Math.floor(hash(i,4)*h),1,1,hash(i,5)>.5?'#9ea2a6':'#7f8387');}for(let x=0;x<w;x+=32)R(g,x,0,1,h,'#777b7f');R(g,0,38,w,1,'#777b7f');wbase(g,w,h,'#5a5d61','#45484b');}}
+};
+Object.assign(FLOORS,{
+  kayupucat:{name:'Kayu Pucat',fn:woodFn(['#e3c593','#dabb86','#eacf9f'],'#bf9a68')},
+  herring:{name:'Parket Herringbone',fn:(()=>{const cs=['#c9965f','#bb8751','#d3a46c','#b27d49'].map(rgb),sm=rgb('#8f6238'),L=4,w=2;
+    return (a,b,A,B)=>{const k=Math.floor(B/L),r=B-k*L,zig=(k&1)?(L-r):r,sx=A+zig,st=Math.floor(sx/w);if(r<.35||((sx%w)+w)%w<.4)return sm;return cs[Math.floor(hash(st,k,5)*cs.length)];};})()},
+  terrazzo:{name:'Terrazzo',fn:(()=>{const bg=rgb('#e7e0d2'),cs=['#cf8a62','#86a893','#5a5a62','#dcb862','#bcbcc0'].map(rgb);
+    return (a,b,A,B)=>{const cx=Math.floor(A*1.25),cy=Math.floor(B*1.25),h=hash(cx,cy,9);
+      if(h>.915)return cs[Math.floor(hash(cx,cy,11)*cs.length)];
+      if(hash(cx-1,cy,9)>.975)return cs[Math.floor(hash(cx-1,cy,11)*cs.length)];
+      if(a<.4||b<.4)return [bg[0]*.94,bg[1]*.94,bg[2]*.94];return bg;};})()},
+  tegel:{name:'Tegel Motif',fn:(()=>{const cr=rgb('#efe3c4'),gr=rgb('#3f6b58'),tc=rgb('#c4673f'),ye=rgb('#e0b04a'),gt=rgb('#b9a98a');
+    return (a,b,A,B)=>{const u=((A%4)+4)%4,v=((B%4)+4)%4;if(u<.35||v<.35)return gt;const d=Math.abs(u-2)+Math.abs(v-2);if(d<.9)return tc;if(d<1.9)return ye;if(d<3)return cr;return gr;};})()}
+});
+Object.assign(WALLS,{
+  zaitun:{name:'Hijau Zaitun',draw:(g,w,h)=>{R(g,0,0,w,h,'#7d8c5e');for(let i=0;i<w*h/60;i++)R(g,Math.floor(hash(i,1)*w),Math.floor(hash(i,2)*(h-8)),1,1,hash(i,3)>.5?'#8a9969':'#6f7e52');
+    const t=h-30;R(g,0,t,w,30,'#5b6945');R(g,0,t-1,w,2,'#c9a36a');for(let x=0;x<w;x+=6)R(g,x,t+2,1,h-10,'#4d5a3a');wbase(g,w,h,'#3d4730','#2b3321');}},
+  terakotaWall:{name:'Plester Terakota',draw:(g,w,h)=>{R(g,0,0,w,h,'#c4714a');for(let i=0;i<w*h/22;i++)R(g,Math.floor(hash(i,1)*w),Math.floor(hash(i,2)*(h-8)),1,1,hash(i,3)>.5?'#d07f58':'#b8663f');wbase(g,w,h,'#8a4a2e','#6e3a24');}},
+  louver:{name:'Kayu Fluted',draw:(g,w,h)=>{for(let x=0;x<w;x+=3){R(g,x,0,2,h,'#a9794b');R(g,x+2,0,1,h,'#7d5733');}wbase(g,w,h,'#4a3322','#321f14');}},
+  subway:{name:'Keramik Subway',draw:(g,w,h)=>{R(g,0,0,w,h,'#d8d8d2');const bw=8,bh=4;for(let r=0;r*bh<h-6;r++){const off=(r%2)*4;for(let x=-bw+off;x<w;x+=bw){R(g,x+1,r*bh+1,bw-1,bh-1,hash(x+off+50,r)>.7?'#eceae3':'#f7f6f1');}}wbase(g,w,h,'#bdbdb7','#9d9d97');}},
+  akademia:{name:'Hijau Akademia',draw:(g,w,h)=>{R(g,0,0,w,h,'#2f4a3c');for(let i=0;i<w*h/50;i++)R(g,Math.floor(hash(i,1)*w),Math.floor(hash(i,2)*(h-8)),1,1,'#3a5a49');
+    const t=h-34;R(g,0,t,w,34,'#4a3022');for(let x=0;x<w;x+=16){R(g,x+2,t+5,12,22,'#573a2a');R(g,x+2,t+5,12,1,'#6b4a36');R(g,x+2,t+26,12,1,'#3a2418');}R(g,0,t-1,w,2,'#2d1c13');wbase(g,w,h,'#2d1c13','#1d120c');}}
+});
+function makeWall(style,len,dark){
+  const cv=mkCanvas(len,WALL_H),g=cv.getContext('2d');
+  (WALLS[style]||WALLS.krem).draw(g,len,WALL_H);
+  R(g,0,0,len,2,'rgba(255,255,255,.55)');R(g,0,2,len,1,'rgba(0,0,0,.2)');
+  if(dark<1)R(g,0,0,len,WALL_H,'rgba(24,10,40,'+(1-dark).toFixed(2)+')');
+  return cv;
+}
+
+/* ---------------- state ---------------- */
+const S={gm:'santai',W:9,D:7,floor:[],wallL:'krem',wallR:'krem',items:[],nextId:1,theme:'japandi',night:false,
+  sel:null,mode:'select',placeDef:null,placeRot:0,paintStyle:'kayu',wallTarget:'both',tab:'barista',ghost:null,drag:null,lastFloor:'kayu'};
+let undoStack=[];
+function resetFloor(style){S.floor=Array.from({length:S.D},()=>Array(S.W).fill(style));S.lastFloor=style;}
+resetFloor('kayu');
+
+/* ---------------- varian (rotasi) & sprite ---------------- */
+function getVariant(d,rot,f){
+  d._v=d._v||{};const k=rot+'|'+f;if(d._v[k])return d._v[k];
+  let parts=d.P(f).map(p=>({...p})),fw=d.fw,fd=d.fd,cells=d.cells?d.cells.map(c=>[...c]):null;
+  let fx=(d.fx||[]).map(o=>({...o})),light=(d.light&&d.light.x!=null)?{...d.light}:null;
+  for(let i=0;i<rot;i++){
+    const FD=fd*8;
+    parts=parts.map(p=>p.t==='b'?{...p,x:FD-(p.y+p.d),y:p.x,w:p.d,d:p.w}:{...p,x:FD-p.y,y:p.x});
+    fx=fx.map(o=>({...o,x:FD-o.y,y:o.x}));
+    if(light)light={...light,x:FD-light.y,y:light.x};
+    if(cells)cells=cells.map(([cx,cy])=>[fd-1-cy,cx]);
+    [fw,fd]=[fd,fw];
+  }
+  return d._v[k]={fw,fd,cells,parts,fx,light};
+}
+const spriteCache={};
+function buildPix(d,rot,theme,f,sit){
+  const back=rot===1||rot===2,flip=rot===1||rot===3;let t=mkCanvas(18,38);
+  drawPerson(t.getContext('2d'),d.pix,f,theme,back);
+  if(sit){const t0=t;t=mkCanvas(18,38);const tg=t.getContext('2d');tg.imageSmoothingEnabled=false;tg.drawImage(t0,0,0,18,28,0,5,18,28);tg.drawImage(t0,0,34,18,4,0,33,18,4);}
+  const cv=mkCanvas(40,48),c=cv.getContext('2d',{willReadFrequently:true}),ox=20,oy=32;
+  if(flip){c.save();c.translate(ox+9,0);c.scale(-1,1);c.drawImage(t,0,oy-28);c.restore();}else c.drawImage(t,ox-9,oy-28);
+  outline(cv);
+  c.globalCompositeOperation='destination-over';c.fillStyle='rgba(0,0,0,.3)';
+  [[5,6],[8,7],[9,8],[8,9],[5,10]].forEach(([hw,y])=>c.fillRect(ox-hw,oy+y,hw*2,1));
+  c.globalCompositeOperation='source-over';
+  return {cv,ox,oy,v:getVariant(d,rot,0)};
+}
+function getSprite(d,rot,theme,f){
+  const key=d.id+'|'+rot+'|'+theme+'|'+f;if(spriteCache[key])return spriteCache[key];
+  if(d.pix)return spriteCache[key]=buildPix(d,rot,theme,f);
+  const v=getVariant(d,rot,f);let maxZ=0;for(const p of v.parts)maxZ=Math.max(maxZ,p.z+p.h);
+  const w=16*(v.fw+v.fd)+PAD*2,h=8*(v.fw+v.fd)+maxZ+PAD*2+1,ox=16*v.fd+PAD,oy=maxZ+PAD;
+  const cv=mkCanvas(w,h),g=cv.getContext('2d',{willReadFrequently:true});
+  for(const p of sortBoxes(v.parts,bnd)){
+    const col=slotColor(p.c,theme);
+    if(p.o&&p.o.a)g.globalAlpha=p.o.a;
+    (p.t==='b'?drawBox:drawCyl)(g,ox,oy,p,col,p.o&&p.o.s);
+    g.globalAlpha=1;
+  }
+  outline(cv);
+  return spriteCache[key]={cv,ox,oy,v};
+}
+function wallSprite(d,side,theme,f,night){
+  const key='W'+d.id+'|'+side+'|'+theme+'|'+f+'|'+(night?1:0);if(spriteCache[key])return spriteCache[key];
+  const W=16*d.wt,H=d.ht,flat=mkCanvas(W,H);
+  d.draw(flat.getContext('2d'),W,H,{theme,f,night});
+  const cv=mkCanvas(W+WP*2,H+(W>>1)+WP*2+1),g=cv.getContext('2d',{willReadFrequently:true});
+  for(let c=0;c<W;c++){const dy=side==='R'?(c>>1):((W-1-c)>>1);g.drawImage(flat,c,0,1,H,WP+c,WP+dy,1,H);}
+  outline(cv);
+  return spriteCache[key]={cv};
+}
+function silhouette(sp){
+  if(sp.sil)return sp.sil;
+  const c=mkCanvas(sp.cv.width,sp.cv.height),g=c.getContext('2d');g.drawImage(sp.cv,0,0);g.globalCompositeOperation='source-in';g.fillStyle='#fff3a8';g.fillRect(0,0,c.width,c.height);
+  return sp.sil=c;
+}
+function tinted(sp){
+  if(sp.bad)return sp.bad;
+  const c=mkCanvas(sp.cv.width,sp.cv.height),g=c.getContext('2d');g.drawImage(sp.cv,0,0);g.globalCompositeOperation='source-atop';g.fillStyle='rgba(255,50,50,.55)';g.fillRect(0,0,c.width,c.height);
+  return sp.bad=c;
+}
+function frameOf(d,t){
+  if(d.clock){const n=new Date();return n.getHours()*60+n.getMinutes();}
+  if(d.frames)return Math.floor(t/(d.fms||700))%d.frames;
+  return 0;
+}
+
+/* ---------------- ruangan (statik) ---------------- */
+const view=mkCanvas(10,10),vg=view.getContext('2d');
+let roomCv=null,gridCv=null;
+function buildRoom(){
+  const W=S.W,D=S.D,iw=(W+D)*16+MARGIN*2,ih=MARGIN*2+WALL_H+(W+D)*8+SLAB;
+  OX=MARGIN+D*16;OY=MARGIN+WALL_H;view.width=iw;view.height=ih;
+  roomCv=mkCanvas(iw,ih);const g=roomCv.getContext('2d',{willReadFrequently:true});
+  drawBox(g,OX,OY,{x:0,y:0,z:-SLAB,w:W*8,d:D*8,h:SLAB},'#5d4431',1);
+  const fc=mkCanvas(iw,ih),fg=fc.getContext('2d'),img=fg.createImageData(iw,ih),dd=img.data;
+  for(let gy=0;gy<D;gy++)for(let gx=0;gx<W;gx++){
+    const st=FLOORS[S.floor[gy][gx]]||FLOORS.kayu,tx=OX+16*(gx-gy),ty=OY+8*(gx+gy);
+    for(let r=0;r<16;r++){
+      const hw=2*Math.min(r,15-r)+2,y=ty+r;
+      for(let x=tx-hw;x<tx+hw;x++){
+        const dx=x+.5-tx,dy=y+.5-ty;
+        const a=clamp((dy+dx/2)/2,0,7.99),b=clamp((dy-dx/2)/2,0,7.99);
+        const c=st.fn(a,b,gx*8+a,gy*8+b),i=(y*iw+x)*4;
+        dd[i]=c[0];dd[i+1]=c[1];dd[i+2]=c[2];dd[i+3]=255;
+      }
+    }
+  }
+  fg.putImageData(img,0,0);g.drawImage(fc,0,0);
+  const wl=makeWall(S.wallL,D*16,.84),wr=makeWall(S.wallR,W*16,1),ll=D*16;
+  for(let c=0;c<W*16;c++)g.drawImage(wr,c,0,1,WALL_H,OX+c,OY-WALL_H+(c>>1),1,WALL_H);
+  for(let c=0;c<ll;c++)g.drawImage(wl,c,0,1,WALL_H,OX-ll+c,OY-WALL_H+((ll-1-c)>>1),1,WALL_H);
+  outline(roomCv);
+  gridCv=mkCanvas(iw,ih);const gg=gridCv.getContext('2d');gg.fillStyle='rgba(255,255,255,.28)';
+  for(let gy=0;gy<D;gy++)for(let gx=0;gx<W;gx++){
+    const tx=OX+16*(gx-gy),ty=OY+8*(gx+gy);
+    for(let i=0;i<16;i++){gg.fillRect(tx+i,ty+(i>>1),1,1);gg.fillRect(tx-i,ty+(i>>1),1,1);gg.fillRect(tx-16+i,ty+8+(i>>1),1,1);gg.fillRect(tx+16-i,ty+8+(i>>1),1,1);}
+  }
+  layout();
+}
+
+/* ---------------- aturan penempatan ---------------- */
+function cellsOf(v,gx,gy){const out=[];if(v.cells)for(const [cx,cy] of v.cells)out.push([gx+cx,gy+cy]);else for(let y=0;y<v.fd;y++)for(let x=0;x<v.fw;x++)out.push([gx+x,gy+y]);return out;}
+function canPlaceFloor(d,rot,gx,gy,ignore){
+  const v=getVariant(d,rot,0);
+  if(gx<0||gy<0||gx+v.fw>S.W||gy+v.fd>S.D)return false;
+  const layer=d.layer||'obj',mine=new Set(cellsOf(v,gx,gy).map(c=>c[0]+','+c[1]));
+  for(const o of S.items){
+    if(o.id===ignore)continue;const od=DEFS[o.def];if(od.wall||(od.layer||'obj')!==layer)continue;
+    for(const c of cellsOf(getVariant(od,o.rot,0),o.gx,o.gy))if(mine.has(c[0]+','+c[1]))return false;
+  }
+  return true;
+}
+function canPlaceWall(d,side,s,ignore){
+  const len=side==='R'?S.W:S.D;if(s<0||s+d.wt>len)return false;
+  for(const o of S.items){
+    if(o.id===ignore)continue;const od=DEFS[o.def];if(!od.wall||o.side!==side)continue;
+    if(s<o.gx+od.wt&&o.gx<s+d.wt&&d.elev<od.elev+od.ht&&od.elev<d.elev+d.ht)return false;
+  }
+  return true;
+}
+function addItem(id,gx,gy,rot,side,theme){
+  const d=DEFS[id];if(!d)return null;
+  const ok=d.wall?canPlaceWall(d,side,gx,-1):canPlaceFloor(d,rot||0,gx,gy,-1);
+  if(!ok){console.warn('tidak muat',id,gx,gy);return null;}
+  const it={id:S.nextId++,def:id,gx,gy:d.wall?0:gy,rot:d.wall?0:(rot||0),theme:theme||S.theme};if(d.wall)it.side=side;
+  S.items.push(it);return it;
+}
+
+/* ---------------- koordinat ---------------- */
+let dpr=1,dispScale=1,offX=0,offY=0;
+const cv=$('#cv'),dctx=cv.getContext('2d');
+function resize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;cv.width=Math.max(1,Math.round(r.width*dpr));cv.height=Math.max(1,Math.round(r.height*dpr));layout();}
+function layout(){
+  const cw=cv.width,ch=cv.height;let s=Math.min((cw-10*dpr)/view.width,(ch-10*dpr)/view.height);
+  s=Math.max(1,Math.floor(s*2)/2);dispScale=s;offX=Math.round((cw-view.width*s)/2);offY=Math.round((ch-view.height*s)/2);
+}
+function toView(e){const r=cv.getBoundingClientRect();return [((e.clientX-r.left)*dpr-offX)/dispScale,((e.clientY-r.top)*dpr-offY)/dispScale];}
+function toTile(ix,iy){const rx=ix-OX,ry=iy-OY;return [ry/16+rx/32,ry/16-rx/32];}
+function wallAt(ix,iy){
+  const rx=ix-OX,ry=iy-OY;
+  if(rx>=0&&rx<16*S.W){const base=rx/2;if(ry<=base+1&&ry>=base-WALL_H)return {side:'R',t:rx/16};}
+  if(rx<0&&-rx<16*S.D){const base=-rx/2;if(ry<=base+1&&ry>=base-WALL_H)return {side:'L',t:-rx/16};}
+  return null;
+}
+function wallSpot(d,w){const len=w.side==='R'?S.W:S.D;return clamp(Math.round(w.t-d.wt/2),0,len-d.wt);}
+
+/* ---------------- render ---------------- */
+function itemPos(it){
+  const d=DEFS[it.def];
+  if(d.wall){const s=it.gx;return it.side==='R'?[OX+16*s-WP,OY+8*s-d.elev-d.ht-WP]:[OX-16*(s+d.wt)-WP,OY+8*s-d.elev-d.ht-WP];}
+  return [OX+16*(it.gx-it.gy),OY+8*(it.gx+it.gy)];
+}
+function spriteOf(it,t){
+  const d=DEFS[it.def],f=frameOf(d,t);
+  return d.wall?wallSprite(d,it.side,it.theme,f,S.night):getSprite(d,it.rot,it.theme,f);
+}
+function drawItem(g,it,t,opt){
+  const d=DEFS[it.def],sp=spriteOf(it,t),p=itemPos(it);
+  const x=d.wall?p[0]:p[0]-sp.ox,y=d.wall?p[1]:p[1]-sp.oy;
+  if(opt.sel){const sil=silhouette(sp);for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]])g.drawImage(sil,x+dx,y+dy);}
+  g.globalAlpha=opt.alpha==null?1:opt.alpha;g.drawImage(opt.bad?tinted(sp):sp.cv,x,y);g.globalAlpha=1;
+}
+function ordered(extra,withC){
+  const walls=[],flats=[],objs=[],airs=[],list=extra?S.items.concat([extra]):S.items;
+  for(const it of list){const d=DEFS[it.def];if(d.wall)walls.push(it);else if(d.layer==='flat')flats.push(it);else if(d.layer==='air')airs.push(it);else objs.push(it);}
+  const gb=it=>{const v=getVariant(DEFS[it.def],it.rot,0);return [it.gx,it.gx+v.fw,it.gy,it.gy+v.fd];};
+  let mid=sortBoxes(withC&&SH.on?objs.concat(walkers()):objs,gb);
+  if(withC&&SH.on)mid=placeSeated(mid);
+  return walls.concat(flats,mid,sortBoxes(airs,gb));
+}
+function footprint(g,it,color){
+  const d=DEFS[it.def];if(d.wall)return;
+  for(const [x,y] of cellsOf(getVariant(d,it.rot,0),it.gx,it.gy))fillTile(g,OX+16*(x-y),OY+8*(x+y),color);
+}
+function drawFx(g,it,t){
+  const d=DEFS[it.def];if(d.wall||!d.fx)return;
+  const v=getVariant(d,it.rot,frameOf(d,t)),ax=OX+16*(it.gx-it.gy),ay=OY+8*(it.gx+it.gy);
+  for(const fx of v.fx){
+    for(let k=0;k<3;k++){
+      const ph=((t/1100)+k/3+fx.x*.13)%1;
+      const sx=Math.round(ax+2*(fx.x-fx.y)+Math.sin(t/380+k*2.1+fx.x)*1.3),sy=Math.round(ay+(fx.x+fx.y)-fx.z-ph*11);
+      g.globalAlpha=(1-ph)*.85;g.fillStyle='#fff';g.fillRect(sx,sy,k===1?2:1,2);
+    }
+    g.globalAlpha=1;
+  }
+}
+function lights(t){
+  const L=[];
+  for(const it of S.items){
+    const d=DEFS[it.def];if(!d.light)continue;
+    if(d.wall){const sp=spriteOf(it,t),p=itemPos(it);L.push({x:p[0]+sp.cv.width/2,y:p[1]+sp.cv.height/2,r:d.light.r,c:d.light.color||'#ffc66e'});}
+    else{const v=getVariant(d,it.rot,frameOf(d,t));if(!v.light)continue;const ax=OX+16*(it.gx-it.gy),ay=OY+8*(it.gx+it.gy);L.push({x:ax+2*(v.light.x-v.light.y),y:ay+(v.light.x+v.light.y)-v.light.z,r:v.light.r,c:v.light.color||'#ffc66e'});}
+  }
+  return L;
+}
+function render(t){
+  const g=vg;g.globalCompositeOperation='source-over';g.clearRect(0,0,view.width,view.height);
+  g.drawImage(roomCv,0,0);
+  const placing=S.mode==='place'||S.mode==='paint'||(S.drag&&S.drag.moved);
+  if(placing)g.drawImage(gridCv,0,0);
+  let ghost=null;
+  if(S.mode==='place'&&S.ghost)ghost=S.ghost;
+  const sel=S.items.find(i=>i.id===S.sel);
+  if(sel&&!(S.drag&&S.drag.moved&&!S.drag.valid))footprint(g,sel,'rgba(255,230,120,.38)');
+  if(S.drag&&S.drag.moved){const it=S.items.find(i=>i.id===S.drag.id);if(it)footprint(g,it,S.drag.valid?'rgba(120,230,130,.45)':'rgba(255,70,70,.5)');}
+  if(ghost)footprint(g,ghost,ghost.valid?'rgba(120,230,130,.45)':'rgba(255,70,70,.5)');
+  for(const it of ordered(ghost,true)){
+    if(it.cust){drawCust(g,it.cust,t);continue;}
+    const isG=it===ghost,isSel=sel&&it.id===sel.id,bad=(isG&&!ghost.valid)||(S.drag&&S.drag.moved&&S.drag.id===it.id&&!S.drag.valid);
+    drawItem(g,it,t,{alpha:isG?.78:1,bad,sel:isSel});
+    if(!isG)drawFx(g,it,t);
+  }
+  if(S.night){
+    g.globalCompositeOperation='source-atop';g.fillStyle='rgba(14,20,66,.54)';g.fillRect(0,0,view.width,view.height);
+    for(const l of lights(t)){
+      const c=hex2rgb(l.c);
+      for(let k=0;k<4;k++){g.fillStyle='rgba('+c[0]+','+c[1]+','+c[2]+',.12)';g.beginPath();g.arc(l.x,l.y,l.r*(1-k*.24),0,Math.PI*2);g.fill();}
+    }
+    g.globalCompositeOperation='source-over';
+  }
+  bzOverlay(g,t);
+  dctx.clearRect(0,0,cv.width,cv.height);dctx.imageSmoothingEnabled=false;
+  dctx.drawImage(view,0,0,view.width,view.height,offX,offY,Math.round(view.width*dispScale),Math.round(view.height*dispScale));
+  bzFloat();
+}
+let lastT=0;
+function loop(t){const dt=Math.min(.1,(t-lastT)/1000||0);lastT=t;bzTick(dt);render(t);requestAnimationFrame(loop);}
+
+/* ---------------- hit test ---------------- */
+function hitItem(ix,iy,t){
+  const list=ordered(null);
+  for(let i=list.length-1;i>=0;i--){
+    const it=list[i],d=DEFS[it.def],sp=spriteOf(it,t),p=itemPos(it);
+    const x=Math.floor(ix-(d.wall?p[0]:p[0]-sp.ox)),y=Math.floor(iy-(d.wall?p[1]:p[1]-sp.oy));
+    if(x<0||y<0||x>=sp.cv.width||y>=sp.cv.height)continue;
+    if(sp.cv.getContext('2d').getImageData(x,y,1,1).data[3]>40)return it;
+  }
+  return null;
+}
+
+/* ---------------- aksi ---------------- */
+const getItem=id=>S.items.find(i=>i.id===id);
+function core(){return JSON.stringify({W:S.W,D:S.D,floor:S.floor,wallL:S.wallL,wallR:S.wallR,items:S.items,theme:S.theme,night:S.night,nextId:S.nextId,lastFloor:S.lastFloor,bz:S.gm==='bisnis'?{money:BZ.money,day:BZ.day,total:BZ.total}:undefined});}
+function restore(str){
+  const o=JSON.parse(str);
+  S.W=o.W;S.D=o.D;S.floor=o.floor;S.wallL=o.wallL;S.wallR=o.wallR;S.items=(o.items||[]).filter(i=>DEFS[i.def]);S.theme=THEMES[o.theme]?o.theme:'japandi';S.night=!!o.night;S.nextId=o.nextId||(S.items.reduce((m,i)=>Math.max(m,i.id),0)+1);S.lastFloor=o.lastFloor||'kayu';if(o.bz){BZ.money=o.bz.money;BZ.day=o.bz.day;BZ.total=o.bz.total||0;}
+  S.sel=null;S.drag=null;S.ghost=null;
+}
+function pushUndo(str){undoStack.push(str||core());if(undoStack.length>40)undoStack.shift();updateTop();}
+function undo(){
+  if(!undoStack.length||SH.on)return;
+  restore(undoStack.pop());buildRoom();afterChange(true);toast('Dibatalkan');
+}
+let saveT=0;
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(S.gm==='bisnis'?'ruangkopi.biz.v1':'ruangkopi.v1',core());}catch(e){}},300);}
+function afterChange(full){updateTop();updateCtx();updateEmpty();if(full)renderPanel();save();}
+let toastT=0;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1600);}
+
+function startPlace(id){
+  if(S.mode==='place'&&S.placeDef===id){endMode();return;}
+  if(SH.on)return;
+  if(S.gm==='bisnis'&&priceOf(id)>BZ.money){toast('Uang kurang: butuh '+rp(priceOf(id)));return;}
+  S.mode='place';S.placeDef=id;S.placeRot=0;S.sel=null;S.ghost=null;updateCtx();renderPanel();
+}
+function endMode(){S.mode='select';S.placeDef=null;S.ghost=null;updateCtx();renderPanel();}
+function selectItem(id){S.sel=id;if(id!=null&&S.mode!=='select'){S.mode='select';S.placeDef=null;S.ghost=null;renderPanel();}updateCtx();}
+
+function updateGhost(ix,iy){
+  const d=DEFS[S.placeDef];if(!d){S.ghost=null;return;}
+  if(d.wall){
+    const w=wallAt(ix,iy);if(!w){S.ghost=null;return;}
+    const s=wallSpot(d,w);S.ghost={id:-1,def:d.id,gx:s,gy:0,rot:0,side:w.side,theme:S.theme,valid:canPlaceWall(d,w.side,s,-1)};
+  }else{
+    const v=getVariant(d,S.placeRot,0),[fx,fy]=toTile(ix,iy);
+    const gx=clamp(Math.round(fx-v.fw/2),0,S.W-v.fw),gy=clamp(Math.round(fy-v.fd/2),0,S.D-v.fd);
+    S.ghost={id:-1,def:d.id,gx,gy,rot:S.placeRot,theme:S.theme,valid:canPlaceFloor(d,S.placeRot,gx,gy,-1)};
+  }
+}
+function commitGhost(){
+  const g=S.ghost;if(!g)return;
+  if(!g.valid){toast('Nggak muat di situ');return;}
+  const cost=bcost(priceOf(g.def));if(!afford(cost))return;
+  pushUndo();const d=DEFS[g.def];spend(cost);
+  addItem(g.def,g.gx,g.gy,g.rot,g.side,g.theme);
+  afterChange(S.gm==='bisnis');if(cost)toast(d.name+'  −'+rp(cost));
+}
+function rotateSel(){
+  const it=getItem(S.sel);if(!it)return;const d=DEFS[it.def];
+  if(d.wall){
+    const ns=it.side==='R'?'L':'R',len=ns==='R'?S.W:S.D,s=clamp(it.gx,0,len-d.wt);
+    if(!canPlaceWall(d,ns,s,it.id)){toast('Dinding sebelah penuh');return;}
+    pushUndo();it.side=ns;it.gx=s;afterChange(false);return;
+  }
+  const old=getVariant(d,it.rot,0),nr=(it.rot+1)%4,nv=getVariant(d,nr,0);
+  const cx=it.gx+old.fw/2,cy=it.gy+old.fd/2;
+  const cand=[[clamp(Math.round(cx-nv.fw/2),0,S.W-nv.fw),clamp(Math.round(cy-nv.fd/2),0,S.D-nv.fd)],[it.gx,it.gy]];
+  for(const [gx,gy] of cand){if(canPlaceFloor(d,nr,gx,gy,it.id)){pushUndo();it.rot=nr;it.gx=gx;it.gy=gy;afterChange(false);return;}}
+  toast('Nggak muat kalau diputar');
+}
+function recolorSel(){
+  const it=getItem(S.sel);if(!it)return;pushUndo();it.theme=THEME_IDS[(THEME_IDS.indexOf(it.theme)+1)%THEME_IDS.length];afterChange(false);toast('Warna: '+THEMES[it.theme].name);
+}
+function deleteSel(){
+  if(SH.on)return;const it=getItem(S.sel);if(!it)return;pushUndo();
+  let rf=0;if(S.gm==='bisnis'){rf=Math.floor(priceOf(it.def)/2);BZ.money+=rf;}
+  S.items=S.items.filter(i=>i.id!==it.id);S.sel=null;afterChange(S.gm==='bisnis');if(rf)toast('Dijual +'+rp(rf));
+}
+
+/* pointer */
+const P={down:false};
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+cv.addEventListener('pointerdown',e=>{
+  cv.setPointerCapture(e.pointerId);P.down=true;const [ix,iy]=toView(e);
+  if(SH.on){shiftTap(ix,iy);return;}
+  if(S.mode==='place'){updateGhost(ix,iy);}
+  else if(S.mode==='paint'){pushUndo();paintAt(ix,iy);}
+  else{
+    const hit=hitItem(ix,iy,performance.now());
+    if(hit){
+      selectItem(hit.id);
+      const [fx,fy]=toTile(ix,iy);
+      S.drag={id:hit.id,ox:hit.gx-fx,oy:hit.gy-fy,orig:{gx:hit.gx,gy:hit.gy,side:hit.side},sx:ix,sy:iy,moved:false,valid:true,snap:core()};
+    }else selectItem(null);
+  }
+});
+cv.addEventListener('pointermove',e=>{
+  if(SH.on)return;const [ix,iy]=toView(e);
+  if(S.mode==='place')updateGhost(ix,iy);
+  else if(S.mode==='paint'&&P.down)paintAt(ix,iy);
+  else if(S.drag&&P.down){
+    const dr=S.drag,it=getItem(dr.id),d=DEFS[it.def];
+    if(!dr.moved){if(Math.hypot(ix-dr.sx,iy-dr.sy)<3)return;dr.moved=true;}
+    if(d.wall){const w=wallAt(ix,iy);if(w){it.side=w.side;it.gx=wallSpot(d,w);}dr.valid=canPlaceWall(d,it.side,it.gx,it.id);}
+    else{const v=getVariant(d,it.rot,0),[fx,fy]=toTile(ix,iy);it.gx=clamp(Math.round(fx+dr.ox),0,S.W-v.fw);it.gy=clamp(Math.round(fy+dr.oy),0,S.D-v.fd);dr.valid=canPlaceFloor(d,it.rot,it.gx,it.gy,it.id);}
+  }
+});
+function pointerEnd(){
+  if(!P.down)return;P.down=false;if(SH.on)return;
+  if(S.mode==='place')commitGhost();
+  else if(S.mode==='paint'){afterChange(false);}
+  else if(S.drag){
+    const dr=S.drag,it=getItem(dr.id);
+    if(dr.moved&&it){
+      if(dr.valid){pushUndo(dr.snap);afterChange(false);}
+      else{it.gx=dr.orig.gx;it.gy=dr.orig.gy;if(dr.orig.side)it.side=dr.orig.side;toast('Nggak muat di situ');}
+    }
+    S.drag=null;
+  }
+}
+cv.addEventListener('pointerup',pointerEnd);
+cv.addEventListener('pointercancel',()=>{P.down=false;S.drag&&getItem(S.drag.id)&&Object.assign(getItem(S.drag.id),S.drag.orig);S.drag=null;});
+cv.addEventListener('pointerleave',()=>{if(S.mode==='place'&&!P.down)S.ghost=null;});
+let paintDirty=false;
+function paintAt(ix,iy){
+  const [fx,fy]=toTile(ix,iy),gx=Math.floor(fx),gy=Math.floor(fy);
+  if(gx<0||gy<0||gx>=S.W||gy>=S.D)return;
+  if(S.floor[gy][gx]===S.paintStyle)return;
+  if(S.gm==='bisnis'){if(BZ.money<5){toast('Uang kurang buat cat lantai');return;}BZ.money-=5;updateHud();}
+  S.floor[gy][gx]=S.paintStyle;S.lastFloor=S.paintStyle;buildRoom();
+}
+window.addEventListener('keydown',e=>{
+  if(e.target&&/INPUT|TEXTAREA/.test(e.target.tagName))return;
+  if(SH.on)return;
+  const k=e.key.toLowerCase();
+  if(k==='r'){if(S.mode==='place'){S.placeRot=(S.placeRot+1)%4;if(S.ghost){const d=DEFS[S.placeDef];if(!d.wall){const v=getVariant(d,S.placeRot,0);S.ghost.rot=S.placeRot;S.ghost.gx=clamp(S.ghost.gx,0,S.W-v.fw);S.ghost.gy=clamp(S.ghost.gy,0,S.D-v.fd);S.ghost.valid=canPlaceFloor(d,S.placeRot,S.ghost.gx,S.ghost.gy,-1);}}}else rotateSel();}
+  else if(k==='delete'||k==='backspace'){deleteSel();}
+  else if(k==='escape'){if(S.mode!=='select')endMode();else selectItem(null);}
+  else if(k==='z'&&(e.ctrlKey||e.metaKey)){undo();e.preventDefault();}
+});
+
+/* ---------------- UI ---------------- */
+const el=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;};
+const TABS=[['barista','Barista'],['dine','Dine-in'],['dekor','Dekor'],['dinding','Hiasan'],['lantai','Lantai & Cat'],['gaya','Gaya'],['ruang','Ruang']];
+function updateTop(){$('#bUndo').disabled=!undoStack.length||SH.on;$('#bGm').textContent=S.gm==='bisnis'?'Bisnis':'Santai';updateHud();$('#bNight').textContent=S.night?'Siang':'Malam';document.body.classList.toggle('night',S.night);}
+function updateEmpty(){}
+function updateCtx(){
+  const c=$('#ctx');c.innerHTML='';const msg=el('div','msg');c.append(msg);
+  const btn=(t,fn,cls)=>{const b=el('button','btn '+(cls||''),t);b.onclick=fn;c.append(b);return b;};
+  if(SH.on){msg.textContent=SH.hint||shiftHint();btn('Tutup kedai',()=>endShift(true),'warn');return;}
+  if(S.mode==='place'){msg.textContent='Menaruh: '+DEFS[S.placeDef].name+' — ketuk / geser di ruangan';if(!DEFS[S.placeDef].wall)btn('Putar',()=>{S.placeRot=(S.placeRot+1)%4;if(S.ghost)updateGhostRot();});btn('Selesai',endMode,'on');}
+  else if(S.mode==='paint'){msg.textContent='Cat lantai: '+FLOORS[S.paintStyle].name+' — usap di lantai';btn('Isi semua',fillAllFloor);btn('Selesai',endMode,'on');}
+  else if(S.sel!=null&&getItem(S.sel)){const it=getItem(S.sel),d=DEFS[it.def];msg.textContent=d.name;btn(d.wall?'Pindah dinding':'Putar',rotateSel);btn('Warna',recolorSel);btn(S.gm==='bisnis'?'Jual +'+rp(Math.floor(priceOf(it.def)/2)):'Hapus',deleteSel,'warn');btn('OK',()=>selectItem(null));}
+  else if(!S.items.length&&S.gm!=='bisnis'){msg.textContent='Ruangan masih kosong. Pilih item di bawah, atau';btn('Isi contoh layout kedai',loadStarter,'on');}
+  else msg.textContent=S.gm==='bisnis'?'Beli item di bawah buat upgrade kedai. Ketuk item di ruangan buat geser / jual. Siap? Tekan Buka Kedai.':'Pilih item di bawah. Ketuk item di ruangan untuk geser, putar, ganti warna.';
+}
+function updateGhostRot(){const d=DEFS[S.placeDef];if(d.wall||!S.ghost)return;const v=getVariant(d,S.placeRot,0);S.ghost.rot=S.placeRot;S.ghost.gx=clamp(S.ghost.gx,0,S.W-v.fw);S.ghost.gy=clamp(S.ghost.gy,0,S.D-v.fd);S.ghost.valid=canPlaceFloor(d,S.placeRot,S.ghost.gx,S.ghost.gy,-1);}
+function fillAllFloor(){let n=0;for(let y=0;y<S.D;y++)for(let x=0;x<S.W;x++)if(S.floor[y][x]!==S.paintStyle)n++;const cost=bcost(5*n);if(!n||!afford(cost))return;pushUndo();spend(cost);for(let y=0;y<S.D;y++)S.floor[y].fill(S.paintStyle);S.lastFloor=S.paintStyle;buildRoom();afterChange(false);}
+function drawPreview(cvs,d){
+  const g=cvs.getContext('2d');g.clearRect(0,0,cvs.width,cvs.height);
+  const sp=d.wall?wallSprite(d,'R',S.theme,frameOf(d,0),S.night):getSprite(d,0,S.theme,frameOf(d,0));
+  const w=sp.cv.width,h=sp.cv.height;let s=Math.min((cvs.width-6)/w,(cvs.height-6)/h);
+  if(s>=1){s=Math.min(Math.floor(s),4);g.imageSmoothingEnabled=false;}else g.imageSmoothingEnabled=true;
+  const dw=Math.round(w*s),dh=Math.round(h*s);g.drawImage(sp.cv,Math.round((cvs.width-dw)/2),Math.round((cvs.height-dh)/2),dw,dh);
+}
+function itemCard(id){
+  const d=DEFS[id],c=el('button','card'+(d.char?' tall':'')+(S.mode==='place'&&S.placeDef===id?' on':''));
+  const cvs=mkCanvas(120,d.char?116:72);drawPreview(cvs,d);c.append(cvs,el('span','',d.name));if(S.gm==='bisnis'){const pr=priceOf(id);c.append(el('span','pr',rp(pr)));if(pr>BZ.money)c.classList.add('lock');}c.onclick=()=>startPlace(id);return c;
+}
+function floorSwatch(id){const c=mkCanvas(60,36),g=c.getContext('2d'),img=g.createImageData(60,36);for(let y=0;y<36;y++)for(let x=0;x<60;x++){const A=x*.45,B=y*.45,col=FLOORS[id].fn(A%8,B%8,A,B),i=(y*60+x)*4;img.data[i]=col[0];img.data[i+1]=col[1];img.data[i+2]=col[2];img.data[i+3]=255;}g.putImageData(img,0,0);return c;}
+function wallSwatch(id){const c=mkCanvas(60,36),g=c.getContext('2d');WALLS[id].draw(g,60,50);return c;}
+const PRESETS=[
+  {id:'japandi',name:'Japandi Hangat',theme:'japandi',floor:'kayu',L:'krem',R:'kayu'},
+  {id:'industrial',name:'Industrial',theme:'industrial',floor:'beton',L:'konkrit',R:'bata'},
+  {id:'vintage',name:'Vintage Cafe',theme:'vintage',floor:'checker',L:'sage',R:'bata'},
+  {id:'pastel',name:'Pastel Kawaii',theme:'pastel',floor:'mint',L:'pink',R:'putihbata'},
+  {id:'midnight',name:'Midnight Jazz',theme:'midnight',floor:'kayugelap',L:'navy',R:'navy',night:true},
+  {id:'tropis',name:'Tropis Rotan',theme:'tropis',floor:'kayupucat',L:'zaitun',R:'krem'},
+  {id:'warkop',name:'Retro Warkop',theme:'warkop',floor:'tegel',L:'subway',R:'terakotaWall'},
+  {id:'beton',name:'Beton Minimalis',theme:'beton',floor:'terrazzo',L:'konkrit',R:'putihbata'},
+  {id:'akademia',name:'Dark Academia',theme:'akademia',floor:'herring',L:'akademia',R:'louver'},
+  {id:'sore',name:'Golden Hour',theme:'sore',floor:'terrazzo',L:'terakotaWall',R:'putihbata'}
+];
+const GROUPS={
+  barista:[['Counter',['counter1','counter2','counter3','counterL','counterRibbed1','counterRibbed2']],
+    ['Alat & Display',['espresso','brewBar','poffertjes','kasir','grinder','etalase','kulkas','kulkasRetro','rakCangkir','rakMerch','menuboard']]],
+  dine:[['Meja',['mejaKotak','mejaBulat','mejaPanjang','mejaTulip','mejaMarmer','mejaWarkop','mejaKopi','barMeja','komunal','lesehan']],
+    ['Kursi & Bangku',['kursi','kursiRotan','kursiShell','kursiPlastik','bangku','bangkuBar','stoolSandaran','dingklik','bangkuPanjang']],
+    ['Sofa & Santai',['sofa2','sofa3','armchair','boothL','beanbag','papasan']],
+    ['Pelanggan',['pelanggan1','pelanggan2']]],
+  dekor:[['Tanaman',['tanaman','monstera','fiddle','palem','kaktus','sansevieria','hangPlant']],
+    ['Lampu',['lampuLantai','lampuGantung','lampuRotan','lampuGlobe']],
+    ['Musik & Buku',['vinyl','turntable','kratePlat','rakBuku','rakIndustri','tumpukBuku','jukebox']],
+    ['Karpet & Partisi',['karpet','karpetBulat','karpetPersia','karpetJute','karpetLari','partisiKayu','partisiRoster']],
+    ['Lainnya',['kucing','standSign']]],
+  dinding:[['Jendela & Pintu',['jendela','jendelaBesar','jendelaArch','pintu','pintuKayu']],
+    ['Neon',['neonCoffee','neonOpen','neonCafe','neonNgopi','neonVibes']],
+    ['Lukisan, Poster & Cermin',['lukisan1','lukisan2','poster','posterNgopi','frameTrio','cerminBulat','cerminArch']],
+    ['Rak & Boho',['rakDinding','rakApung','tanamanGantung','macrame','piringRotan']],
+    ['Lampu & Lainnya',['lampuDinding','lampuArm','jam','acSplit']]]
+};
+function applyPreset(p){
+  const cost=bcost(800);if(!afford(cost))return;
+  pushUndo();spend(cost);S.theme=p.theme;resetFloor(p.floor);S.wallL=p.L;S.wallR=p.R;S.items.forEach(i=>i.theme=p.theme);if(p.night!=null)S.night=p.night;
+  buildRoom();afterChange(true);toast('Gaya: '+p.name);
+}
+function renderPanel(){
+  const tabs=$('#tabs');tabs.innerHTML='';
+  if(SH.on){const bx=$('#items'),kp=bx.scrollTop;bx.innerHTML='';shiftPanel(tabs,bx);bx.scrollTop=kp;return;}
+  (S.gm==='bisnis'?[['menu','Menu']].concat(TABS):TABS).forEach(([id,n])=>{const b=el('button','btn'+(S.tab===id?' on':''),n);b.onclick=()=>{S.tab=id;if(id!=='lantai'&&S.mode==='paint')endMode();renderPanel();};tabs.append(b);});
+  const box=$('#items');const keep=box.scrollTop;box.innerHTML='';
+  if(CATS[S.tab]){
+    const ids=CATS[S.tab],chars=ids.filter(id=>DEFS[id].char),rest=ids.filter(id=>!DEFS[id].char&&!(S.gm==='bisnis'&&DEFS[id].pix));
+    const gs=GROUPS[S.tab];
+    if(gs){const used=new Set();
+      gs.forEach(([n,l])=>{const li=l.filter(id=>DEFS[id]&&!(S.gm==='bisnis'&&DEFS[id].pix&&!DEFS[id].char));li.forEach(id=>used.add(id));if(li.length){box.append(el('div','sec',n));const gr=el('div','grid');li.forEach(id=>gr.append(itemCard(id)));box.append(gr);}});
+      const left=rest.filter(id=>!used.has(id));if(left.length){box.append(el('div','sec','Lainnya'));const gr=el('div','grid');left.forEach(id=>gr.append(itemCard(id)));box.append(gr);}}
+    else{const gr=el('div','grid');rest.forEach(id=>gr.append(itemCard(id)));box.append(gr);}
+    if(chars.length){box.append(el('div','sec',S.gm==='bisnis'?'Rekrut barista — bantu bikin pesanan otomatis':'Pilih barista'));const g2=el('div','grid');chars.forEach(id=>g2.append(itemCard(id)));box.append(g2);box.append(el('div','note','Barista bisa diputar, digeser, dan diganti warna bajunya seperti item lain.'));}
+    if(S.tab==='dinding')box.append(el('div','note','Hiasan dinding: geser di dinding kiri atau kanan. Pilih item lalu tekan “Pindah dinding” untuk loncat ke sisi lain.'));
+    if(S.tab==='dine')box.append(el('div','note','Tips: kursi menghadap ke arah tertentu — pakai Putar sampai pas dengan mejanya.'));
+  }
+  else if(S.tab==='menu'){menuTab(box);}
+  else if(S.tab==='lantai'){
+    box.append(el('div','sec','Lantai — pilih gaya, lalu usap di ruangan untuk cat petak per petak'+(S.gm==='bisnis'?' (Rp 5.000/petak, dinding Rp 200.000/sisi)':'')));
+    const gr=el('div','grid');
+    Object.keys(FLOORS).forEach(id=>{const c=el('button','card'+(S.mode==='paint'&&S.paintStyle===id?' on':''));c.append(floorSwatch(id),el('span','',FLOORS[id].name));c.onclick=()=>{S.mode='paint';S.paintStyle=id;S.sel=null;S.ghost=null;S.placeDef=null;updateCtx();renderPanel();};gr.append(c);});
+    box.append(gr);
+    box.append(el('div','sec','Dinding'));
+    const row=el('div','row');
+    [['both','Dua-duanya'],['L','Kiri'],['R','Kanan']].forEach(([k,n])=>{const b=el('button','btn'+(S.wallTarget===k?' on':''),n);b.onclick=()=>{S.wallTarget=k;renderPanel();};row.append(b);});
+    box.append(row);
+    const gw=el('div','grid');
+    Object.keys(WALLS).forEach(id=>{const c=el('button','card');c.append(wallSwatch(id),el('span','',WALLS[id].name));c.onclick=()=>{const n=(S.wallTarget!=='R'&&S.wallL!==id?1:0)+(S.wallTarget!=='L'&&S.wallR!==id?1:0);if(!n)return;const cost=bcost(200*n);if(!afford(cost))return;pushUndo();spend(cost);if(S.wallTarget!=='R')S.wallL=id;if(S.wallTarget!=='L')S.wallR=id;buildRoom();afterChange(S.gm==='bisnis');};gw.append(c);});
+    box.append(gw);
+  }
+  else if(S.tab==='gaya'){
+    box.append(el('div','sec','Paket gaya — ganti lantai, dinding, dan warna semua furnitur sekaligus'+(S.gm==='bisnis'?' ('+rp(800)+')':'')));
+    const gr=el('div','grid');
+    PRESETS.forEach(p=>{const c=el('button','card'),dots=el('div','dots'),t=THEMES[p.theme];[t.wood,t.wood2,t.fabric,t.accent].forEach(col=>{const i=el('i');i.style.background=col;dots.append(i);});c.append(dots,el('span','',p.name));c.onclick=()=>applyPreset(p);gr.append(c);});
+    box.append(gr);
+    box.append(el('div','sec','Warna furnitur untuk item baru'));
+    const g2=el('div','grid');
+    THEME_IDS.forEach(id=>{const t=THEMES[id],c=el('button','card'+(S.theme===id?' on':'')),dots=el('div','dots');[t.wood,t.wood2,t.top,t.fabric,t.accent].forEach(col=>{const i=el('i');i.style.background=col;dots.append(i);});c.append(dots,el('span','',t.name));c.onclick=()=>{S.theme=id;save();renderPanel();};g2.append(c);});
+    box.append(g2);
+    const r=el('div','row');const b=el('button','btn','Terapkan ke semua item');b.onclick=()=>{pushUndo();S.items.forEach(i=>i.theme=S.theme);afterChange(true);toast('Semua item: '+THEMES[S.theme].name);};r.append(b);box.append(r);
+    box.append(el('div','note','Mau satu item beda warna? Ketuk item di ruangan, lalu tombol “Warna”.'));
+  }
+  else if(S.tab==='ruang'){
+    box.append(el('div','sec','Ukuran ruangan'));
+    const step=(label,key)=>{const r=el('div','row'),s=el('div','step'),m=el('button','btn','−'),p=el('button','btn','+'),v=el('b','',S[key]);m.onclick=()=>setSize(key==='W'?S.W-1:S.W,key==='D'?S.D-1:S.D);p.onclick=()=>setSize(key==='W'?S.W+1:S.W,key==='D'?S.D+1:S.D);s.append(m,v,p);r.append(el('div','',label),s);r.style.justifyContent='space-between';return r;};
+    box.append(step('Lebar (dinding kanan)','W'),step('Panjang (dinding kiri)','D'));
+    if(S.gm==='bisnis'){box.append(el('div','note','Perluas ruangan: Rp 300.000 + Rp 120.000 per petak tambahan. Memperkecil gratis (tanpa refund).'));const rr=el('div','row');const bn=el('button','btn warn','Mulai karier baru');let ar=false;bn.onclick=()=>{if(!ar){ar=true;bn.textContent='Yakin? Ketuk lagi';setTimeout(()=>{ar=false;bn.textContent='Mulai karier baru';},2500);return;}careerPicker();};rr.append(bn);box.append(rr);box.scrollTop=keep;return;}
+    box.append(el('div','sec','Layout'));
+    const r=el('div','row');
+    const b1=el('button','btn','Contoh layout kedai');b1.onclick=()=>{loadStarter();};
+    const b3=el('button','btn','Contoh layout Jaksel');b3.onclick=()=>{loadJaksel();};
+    const b2=el('button','btn warn','Kosongkan ruangan');let armed=false;
+    b2.onclick=()=>{if(!armed){armed=true;b2.textContent='Yakin? Ketuk lagi';setTimeout(()=>{armed=false;b2.textContent='Kosongkan ruangan';},2500);return;}pushUndo();S.items=[];S.sel=null;afterChange(true);toast('Ruangan dikosongkan');};
+    r.append(b1,b3,b2);box.append(r);
+    box.append(el('div','note','Perubahan tersimpan otomatis di browser ini. Pakai tombol Foto di atas untuk ambil gambar ruangan lalu bagikan.'));
+  }
+  box.scrollTop=keep;
+}
+function setSize(W,D){
+  W=clamp(W,5,12);D=clamp(D,5,12);if(W===S.W&&D===S.D)return;
+  for(const it of S.items){const d=DEFS[it.def];
+    if(d.wall){const len=it.side==='R'?W:D;if(it.gx+d.wt>len){toast('Ada hiasan dinding di area itu');return;}}
+    else{const v=getVariant(d,it.rot,0);if(it.gx+v.fw>W||it.gy+v.fd>D){toast('Ada item di area yang mau dipotong');return;}}}
+  const grow=W*D-S.W*S.D,cost=bcost(grow>0?300+120*grow:0);if(!afford(cost))return;
+  pushUndo();spend(cost);
+  const nf=Array.from({length:D},(_,y)=>Array.from({length:W},(_,x)=>(S.floor[y]&&S.floor[y][x])||S.lastFloor));
+  S.W=W;S.D=D;S.floor=nf;buildRoom();afterChange(true);
+}
+function loadStarter(){
+  pushUndo();S.W=9;S.D=7;resetFloor('kayu');
+  for(let y=0;y<=3;y++)for(let x=4;x<9;x++)S.floor[y][x]='checker';
+  S.wallL='sage';S.wallR='bata';S.theme='vintage';S.items=[];S.sel=null;S.mode='select';S.placeDef=null;S.nextId=1;
+  buildRoom();
+  const A=addItem;
+  // zona barista
+  A('rakCangkir',4,0,0);A('kulkas',5,0,0);A('grinder',6,0,0);A('counter1',7,0,0);A('counter1',8,0,0);
+  A('etalase',4,2,0);A('espresso',6,2,0);A('kasir',8,2,0);A('baristaFPro',7,1,0);A('baristaMRebel',5,1,0);
+  // dine-in
+  A('mejaBulat',2,3,0);A('kursi',1,3,3);A('kursi',3,3,1);
+  A('mejaKotak',2,5,0);A('kursi',1,5,3);A('kursi',3,5,1);
+  A('boothL',6,5,0);A('mejaKotak',7,6,0);
+  A('pelanggan1',6,3,2);
+  // dekor
+  A('monstera',0,0,0);A('lampuLantai',3,0,0);A('tanaman',8,4,0);A('karpetBulat',4,4,0);A('kucing',4,4,0);A('standSign',2,1,0);
+  A('lampuGantung',2,3,0);A('lampuGantung',2,5,0);A('lampuGantung',5,2,0);
+  // dinding
+  A('menuboard',4,0,0,'R');A('neonCoffee',6,0,0,'R');A('lampuDinding',8,0,0,'R');A('pintu',1,0,0,'R');A('lukisan1',3,0,0,'R');
+  A('jendela',1,0,0,'L');A('jam',3,0,0,'L');A('jendelaBesar',4,0,0,'L');
+  afterChange(true);toast('Contoh layout dimuat');
+}
+
+function loadJaksel(){
+  pushUndo();S.W=10;S.D=8;resetFloor('terrazzo');
+  for(let y=3;y<=7;y++)for(let x=0;x<=4;x++)S.floor[y][x]='herring';
+  S.wallL='zaitun';S.wallR='putihbata';S.theme='tropis';S.items=[];S.sel=null;S.mode='select';S.placeDef=null;S.nextId=1;
+  buildRoom();
+  const A=addItem;
+  // zona barista (dinding kanan)
+  A('rakMerch',5,0,0);A('kulkasRetro',6,0,0);A('grinder',7,0,0);A('counter1',8,0,0);A('kasir',9,0,0);
+  A('counterRibbed2',5,2,0);A('espresso',7,2,0);A('brewBar',9,2,0);A('baristaFRebel',6,1,0);A('baristaMRebel',8,1,0);
+  // bar jendela
+  A('barMeja',1,0,0);A('stoolSandaran',1,1,0);A('stoolSandaran',2,1,0);A('stoolSandaran',3,1,0);
+  // lounge kiri
+  A('palem',0,0,0);A('sansevieria',0,1,0);A('papasan',0,2,0);A('sofa3',0,3,3);A('mejaKopi',2,3,1);
+  A('beanbag',3,3,0);A('beanbag',3,5,0);A('fiddle',0,6,0);A('tumpukBuku',0,7,0);A('turntable',1,7,0);A('karpetPersia',1,3,0);
+  A('partisiKayu',4,3,1);
+  // dine-in
+  A('komunal',5,4,0);A('lesehan',8,5,0);A('karpetJute',8,5,0);
+  A('mejaWarkop',4,7,0);A('kursiPlastik',4,6,0);A('kursiPlastik',5,6,0);
+  A('jukebox',9,3,0);A('kaktus',9,7,0);A('kucing',3,6,0);
+  // lampu & gantung
+  A('lampuRotan',6,5,0);A('lampuGlobe',1,4,0);A('hangPlant',9,4,0);A('lampuGlobe',2,0,0);
+  // dinding kanan
+  A('jendelaArch',1,0,0,'R');A('acSplit',3,0,0,'R');A('neonNgopi',5,0,0,'R');A('menuboard',7,0,0,'R');A('cerminBulat',9,0,0,'R');
+  // dinding kiri
+  A('jendelaBesar',0,0,0,'L');A('piringRotan',3,0,0,'L');A('rakApung',5,0,0,'L');
+  afterChange(true);toast('Contoh layout Jaksel dimuat');
+}
+
+/* foto */
+function takePhoto(){
+  const s=Math.max(2,Math.min(6,Math.floor(1400/view.width))),pad=24,c=mkCanvas(view.width*s+pad*2,view.height*s+pad*2),g=c.getContext('2d');
+  g.fillStyle=S.night?'#171a36':'#f1e3c8';g.fillRect(0,0,c.width,c.height);
+  g.imageSmoothingEnabled=false;render(performance.now());g.drawImage(view,0,0,view.width,view.height,pad,pad,view.width*s,view.height*s);
+  g.fillStyle=S.night?'#f3e8d2':'#3a281f';g.font='14px monospace';g.fillText('Ruang Kopi',pad,c.height-8);
+  try{$('#shotImg').src=c.toDataURL('image/png');$('#modal').hidden=false;}catch(e){toast('Gagal bikin foto');}
+}
+
+/* ================================================================
+   MODE BISNIS — data, harga, menu, pelanggan, grid
+   ================================================================ */
+const rp=n=>'Rp '+Math.round(n*1000).toLocaleString('id-ID');
+const bcost=x=>S.gm==='bisnis'?x:0;
+const PRICE={
+  counter1:150,counter2:280,counter3:400,counterL:350,counterRibbed1:250,counterRibbed2:450,
+  espresso:1500,brewBar:900,kasir:600,grinder:500,etalase:800,kulkas:700,kulkasRetro:1100,rakCangkir:200,rakMerch:400,poffertjes:1200,menuboard:300,
+  baristaMRebel:900,baristaMPro:900,baristaFRebel:900,baristaFPro:900,
+  mejaKotak:200,mejaBulat:220,mejaPanjang:450,mejaTulip:300,mejaMarmer:600,mejaWarkop:250,mejaKopi:280,barMeja:700,komunal:900,lesehan:400,
+  kursi:70,kursiRotan:150,kursiShell:180,kursiPlastik:80,bangku:90,bangkuBar:120,stoolSandaran:160,dingklik:70,bangkuPanjang:220,
+  sofa2:500,sofa3:750,armchair:400,boothL:1100,beanbag:200,papasan:250,
+  tanaman:80,monstera:150,fiddle:200,palem:250,kaktus:90,sansevieria:100,hangPlant:120,lampuLantai:200,lampuGantung:160,lampuRotan:220,lampuGlobe:260,
+  vinyl:120,turntable:450,kratePlat:150,rakBuku:300,rakIndustri:400,tumpukBuku:80,jukebox:1500,
+  karpet:200,karpetBulat:220,karpetPersia:500,karpetJute:280,karpetLari:180,partisiKayu:300,partisiRoster:350,kucing:400,standSign:100,
+  jendela:200,jendelaBesar:350,jendelaArch:400,pintu:300,pintuKayu:300,lukisan1:120,lukisan2:120,poster:80,posterNgopi:90,frameTrio:200,
+  cerminBulat:250,cerminArch:300,rakDinding:150,rakApung:150,tanamanGantung:120,macrame:150,piringRotan:130,
+  neonCoffee:500,neonOpen:450,neonCafe:550,neonNgopi:600,neonVibes:650,lampuDinding:130,lampuArm:180,jam:120,acSplit:700
+};
+const priceOf=id=>PRICE[id]!=null?PRICE[id]:150;
+const afford=c=>{if(c>BZ.money){toast('Uang kurang: butuh '+rp(c));return false;}return true;};
+const spend=c=>{if(c)BZ.money-=c;};
+
+const MENU={
+  ks:{n:'Kopi Susu Ruang',drink:1,p:{ice:30,hot:28},t:5.5,st:'espresso',w:50},
+  am:{n:'Americano Ruang',drink:1,p:{ice:25,hot:20},t:4.5,st:'espresso',w:30},
+  pr:{n:'Premium Ruang',drink:1,p:{ice:35},t:9,st:'brewBar',w:20},
+  dn:{n:'Donat Ruang',p:{x:7},t:1.5,st:'etalase',w:45},
+  sb:{n:'Saltbread',p:{x:20},t:1.5,st:'etalase',w:25},
+  pf:{n:'Poffertjes',p:{x:25},t:7,st:'poffertjes',w:30}
+};
+const MENU_KEYS=['ks','am','pr','dn','sb','pf'];
+const STN=['espresso','brewBar','etalase','poffertjes'];
+const TABLES=new Set(['mejaKotak','mejaBulat','mejaPanjang','mejaTulip','mejaMarmer','mejaWarkop','mejaKopi','barMeja','komunal','lesehan']);
+const SEATS=new Set(['kursi','kursiRotan','kursiShell','kursiPlastik','bangku','bangkuBar','stoolSandaran','dingklik','bangkuPanjang','sofa2','sofa3','armchair','boothL','beanbag','papasan']);
+const N4=[[1,0],[0,1],[-1,0],[0,-1]];
+const itemPrice=it=>MENU[it.k].p[it.v];
+const availMenu=()=>{const has=new Set(S.items.map(i=>i.def));return new Set(MENU_KEYS.filter(k=>has.has(MENU[k].st)));};
+
+/* vibe / rating kedai */
+const STARS=[0,14,28,46,70];
+function vibeScore(){
+  const seen={};let s=0;
+  for(const it of S.items){const d=DEFS[it.def];if(!d||d.cat==='barista'||d.pix)continue;
+    const p=Math.min(3,priceOf(it.def)/110);s+=p*(seen[it.def]?.4:1);seen[it.def]=1;}
+  return s;
+}
+function starsOf(s){let n=1;for(let i=1;i<STARS.length;i++)if(s>=STARS[i])n=i+1;return n;}
+
+/* pelanggan: tampilan acak deterministik */
+const SKINS=['#f3d0b0','#e6bc94','#d9a679','#b97f55','#8d5a3b','#f0c9a2'];
+const HAIRC=['#2a1f1a','#33241d','#6b3b2b','#c9a25a','#1b1b22','#8a5a3a','#4a2f24','#d8d2c4'];
+const SHIRTS=['#d95f4b','#4b82c9','#e9e4d6','#5fa86d','#e6b64a','#8e6bbf','#2f2f38','#e58aa6','#3f9a9a','#c9733a','#8a9a5a','#f2d4b8'];
+const PANTS=['#3a4a66','#2d313d','#6b5a4a','#4a3b32','#59627a','#7a6a55','#232328'];
+function mkLook(n){
+  const r=k=>hash(n,k,77),pick=(a,k)=>a[Math.floor(r(k)*a.length)];
+  const fem=r(1)<.5;
+  const o={skin:pick(SKINS,2),hair:pick(HAIRC,3),hs:fem?(r(4)<.5?'bob':'bun'):(r(4)<.5?'short':'side'),shirt:pick(SHIRTS,5),sleeve:r(6)<.6?'short':'long',pants:pick(PANTS,7),shoes:r(8)<.5?'#2c2c30':'#e8e4da'};
+  if(fem){if(r(9)<.5)o.lips='#c66a6a';if(r(10)<.4)o.blush='#eea7a0';if(r(11)<.4){o.skirt=pick(PANTS,12);delete o.pants;}}
+  else{if(r(13)<.18)o.beard=o.hair;if(r(14)<.15)o.glasses=true;if(r(15)<.12)o.baggy=true;}
+  if(r(16)<.1)o.hat=pick(SHIRTS,17);
+  return o;
+}
+const LOOKS=Array.from({length:18},(_,i)=>mkLook(i+3));
+const custCache={};
+function custSprite(look,rot,f,sit){
+  const key=look+'|'+rot+'|'+f+'|'+(sit?1:0);if(custCache[key])return custCache[key];
+  return custCache[key]=buildPix({id:'c'+look,pix:LOOKS[look],fw:1,fd:1,P:()=>[]},rot,'japandi',f,sit);
+}
+DEFS.__cust={id:'__cust',cat:'dine',fw:1,fd:1,P:()=>[]};
+
+/* grid & jalan */
+function bzGrid(){
+  const blk=Array.from({length:S.D},()=>Array(S.W).fill(0));
+  for(const it of S.items){const d=DEFS[it.def];if(d.wall||(d.layer||'obj')!=='obj')continue;
+    for(const [x,y] of cellsOf(getVariant(d,it.rot,0),it.gx,it.gy))if(blk[y]&&blk[y][x]!=null)blk[y][x]=1;}
+  return blk;
+}
+function bfs(blk,sx,sy,allowT){
+  const W=S.W,D=S.D,dist=Array.from({length:D},()=>Array(W).fill(-1)),prev={},q=[[sx,sy]];dist[sy][sx]=0;
+  for(let h=0;h<q.length;h++){const [x,y]=q[h];
+    for(const [dx,dy] of N4){const nx=x+dx,ny=y+dy;
+      if(nx<0||ny<0||nx>=W||ny>=D||dist[ny][nx]>=0)continue;
+      if(blk[ny][nx]&&!(allowT&&allowT[0]===nx&&allowT[1]===ny))continue;
+      dist[ny][nx]=dist[y][x]+1;prev[nx+','+ny]=[x,y];q.push([nx,ny]);}}
+  return {dist,prev};
+}
+function pathTo(blk,from,to){
+  if(from[0]<0||from[1]<0||from[0]>=S.W||from[1]>=S.D)return null;
+  const {dist,prev}=bfs(blk,from[0],from[1],to);
+  if(dist[to[1]][to[0]]<0)return null;
+  const out=[];let c=to;while(c[0]!==from[0]||c[1]!==from[1]){out.push(c);c=prev[c[0]+','+c[1]];}
+  return out.reverse();
+}
+
+/* ================================================================
+   MODE BISNIS — shift, pelanggan, tap-tap
+   ================================================================ */
+const BZ={money:600,day:1,total:0};
+const SH={on:false,t:0,dur:180,closing:false,tail:0,custs:[],nid:1,spawnT:0,L:null,queue:[],pick:[],jobs:{},seats:[],stats:null,speed:1,autoT:0,flt:[],hint:'',uiT:0,lastSig:''};
+
+function bzLayout(){
+  const blk=bzGrid(),W=S.W,D=S.D,L={blk,warn:[]};
+  let door=null;
+  for(const it of S.items){if(!/^pintu/.test(it.def))continue;const d=DEFS[it.def];
+    for(let k=0;k<d.wt&&!door;k++){const c=it.side==='R'?[it.gx+k,0]:[0,it.gx+k];if(c[0]<W&&c[1]<D&&!blk[c[1]][c[0]])door=[c[0],c[1],it.side];}}
+  if(!door){L.warn.push('Pasang pintu dulu (tab Hiasan) — pelanggan butuh jalan masuk.');return L;}
+  L.door=[door[0],door[1]];L.side=door[2];
+  const reach=bfs(blk,door[0],door[1]);
+  if(!S.items.some(i=>DEFS[i.def].char))L.warn.push('Butuh minimal 1 barista (tab Barista).');
+  const kas=S.items.filter(i=>i.def==='kasir');
+  if(!kas.length)L.warn.push('Butuh Kasir (tab Barista).');
+  if(!S.items.some(i=>i.def==='espresso'||i.def==='brewBar'))L.warn.push('Butuh Bar Espresso atau Brew Bar buat bikin kopi.');
+  let best=null;
+  for(const k of kas)for(const [dx,dy] of N4){const x=k.gx+dx,y=k.gy+dy;if(x<0||y<0||x>=W||y>=D||blk[y][x])continue;const dd=reach.dist[y][x]-(dy===1?3:0);if(reach.dist[y][x]<0)continue;if(!best||dd<best.dd)best={x,y,dd};}
+  if(kas.length&&!best){L.warn.push('Kasir nggak bisa dijangkau — sisakan petak kosong di depannya.');}
+  if(!best)return L;
+  L.spot=[best.x,best.y];
+  const fs=bfs(blk,best.x,best.y),cells=[];
+  for(let y=0;y<D;y++)for(let x=0;x<W;x++)if(fs.dist[y][x]>=0&&!(x===door[0]&&y===door[1]))cells.push([x,y,fs.dist[y][x]]);
+  cells.sort((a,b)=>a[2]-b[2]||a[1]-b[1]||a[0]-b[0]);
+  L.slots=cells.slice(0,11).map(c=>[c[0],c[1]]);
+  L.pickN=Math.max(0,Math.min(4,L.slots.length-4));L.qcap=Math.max(1,Math.min(6,L.slots.length-L.pickN));
+  if(L.slots.length<4)L.warn.push('Ruang terlalu sempit buat antre — kosongkan beberapa petak.');
+  const seats=[];
+  for(const it of S.items){if(!SEATS.has(it.def))continue;
+    for(const [x,y] of cellsOf(getVariant(DEFS[it.def],it.rot,0),it.gx,it.gy)){
+      let t=null,td=9;
+      for(const tb of S.items){if(!TABLES.has(tb.def))continue;
+        for(const [tx,ty] of cellsOf(getVariant(DEFS[tb.def],tb.rot,0),tb.gx,tb.gy)){
+          if(Math.max(Math.abs(tx-x),Math.abs(ty-y))>1)continue;const md=Math.abs(tx-x)+Math.abs(ty-y);if(md<td){td=md;t=[tx,ty];}}}
+      if(!t)continue;
+      let ok=false;for(const [dx,dy] of N4){const nx=x+dx,ny=y+dy;if(nx>=0&&ny>=0&&nx<W&&ny<D&&!blk[ny][nx]&&reach.dist[ny][nx]>=0)ok=true;}
+      if(!ok)continue;
+      const dx=t[0]-x,dy=t[1]-y;
+      seats.push({it,x,y,rot:Math.abs(dy)>=Math.abs(dx)?(dy>=0?0:2):(dx>0?3:1),taken:0,md:Math.abs(x-best.x)+Math.abs(y-best.y)});
+    }}
+  L.seats=seats;
+  return L;
+}
+
+/* ---------- pelanggan ---------- */
+const mkIt=k=>({k,v:MENU[k].drink?((MENU[k].p.hot&&Math.random()<.3)?'hot':'ice'):'x',s:'wait'});
+function pickW(arr){let tot=0;arr.forEach(k=>tot+=MENU[k].w);let r=Math.random()*tot;for(const k of arr){r-=MENU[k].w;if(r<=0)return k;}return arr[0];}
+function genOrder(){
+  const av=availMenu(),dr=['ks','am','pr'].filter(k=>av.has(k)),sn=['dn','sb','pf'].filter(k=>av.has(k)),items=[];
+  if(dr.length){items.push(mkIt(pickW(dr)));if(Math.random()<.12)items.push(mkIt(pickW(dr)));}
+  if(sn.length&&Math.random()<.45)items.push(mkIt(pickW(sn)));
+  if(!items.length&&sn.length)items.push(mkIt(pickW(sn)));
+  return items.slice(0,3);
+}
+const cellOf=c=>[Math.floor(c.x),Math.floor(c.y)];
+function goto(c,cell){
+  const cc=cellOf(c),out=cc[0]<0||cc[1]<0||cc[0]>=S.W||cc[1]>=S.D,from=out?SH.L.door:cc;
+  const p=pathTo(SH.L.blk,from,cell);
+  if(p)c.path=out?[[from[0],from[1]]].concat(p):p;else if(cc[0]===cell[0]&&cc[1]===cell[1])c.path=[];
+  return !!p;
+}
+function advanceQueue(){SH.queue.forEach((c,i)=>{c.qi=i;goto(c,SH.L.slots[i]);});}
+function pickSlot(p){return SH.L.slots[SH.L.slots.length-1-p];}
+function spawnCust(){
+  const L=SH.L;if(SH.queue.length>=L.qcap)return;
+  const d=L.door,out=L.side==='R'?[d[0]+.5,d[1]-.4]:[d[0]-.4,d[1]+.5];
+  const c={id:SH.nid++,look:(Math.random()*LOOKS.length)|0,x:out[0],y:out[1],path:[],rot:L.side==='R'?0:3,st:'q',pat:1,alpha:0,fade:false,dine:Math.random()<.55,order:null,seat:null,pp:-1,age:0,qi:SH.queue.length,sit:false,eatT:0,walk:false,got:0,gone:false,angry:false};
+  SH.custs.push(c);SH.queue.push(c);
+  c.path=[[d[0],d[1]]].concat(pathTo(L.blk,d,L.slots[c.qi])||[]);
+}
+function nextGap(){
+  const stars=starsOf(vibeScore()),rate=(1+.12*(stars-1))*Math.min(1.8,1+.05*(BZ.day-1));
+  return (9.5/rate)*(.75+Math.random()*.5);
+}
+function freeSeat(){
+  const f=SH.L.seats.filter(s=>!s.taken);if(!f.length)return null;
+  f.sort((a,b)=>a.md-b.md+(Math.random()-.5));return f[0];
+}
+function freePick(){for(let p=0;p<SH.L.pickN;p++)if(!SH.pick[p])return p;return -1;}
+
+function startLeave(c,angry){
+  if(c.st==='leave')return;
+  if(SH.queue.includes(c)){SH.queue.splice(SH.queue.indexOf(c),1);advanceQueue();}
+  if(c.seat)c.seat.taken=0;if(c.pp>=0&&SH.pick[c.pp]===c)SH.pick[c.pp]=null;
+  for(const sid in SH.jobs)if(SH.jobs[sid].c===c){SH.jobs[sid].it.s='x';delete SH.jobs[sid];}
+  if(c.order)for(const it of c.order.items)if(it.s==='wait'||it.s==='make'||it.s==='ready')it.s='x';
+  c.st='leave';c.sit=false;c.angry=!!angry;
+  if(angry){SH.stats.lost++;float(c,'kabur','#d9534f');}
+  const d=SH.L.door;if(!goto(c,[d[0],d[1]]))c.path=[];
+}
+function float(c,txt,col){SH.flt.push({x:c.x,y:c.y,txt,col:col||'#2f7a3a',t:0});}
+
+function takeOrder(c){
+  let seat=null,pp=-1;
+  if(c.dine)seat=freeSeat();
+  if(!seat){pp=freePick();if(pp<0){toast('Tempat tunggu pickup penuh — layani pesanan dulu');return;}}
+  const items=genOrder();if(!items.length){toast('Belum ada menu — pasang mesin dulu');return;}
+  c.order={items,ot:SH.t};c.dine=!!seat;
+  SH.queue.shift();advanceQueue();
+  c.pat=Math.min(1,c.pat+.4);
+  if(seat){seat.taken=c.id;c.seat=seat;c.st='toSeat';goto(c,[seat.x,seat.y]);}
+  else{SH.pick[pp]=c;c.pp=pp;c.st='toPick';goto(c,pickSlot(pp));}
+  toast((c.dine?'Dine-in: ':'Take-away: ')+items.map(i=>MENU[i.k].n.replace(' Ruang','')+(i.v==='x'?'':(i.v==='ice'?' (Ice)':' (Hot)'))).join(', '));
+}
+function pendingFor(kind){
+  let best=null;
+  for(const c of SH.custs){if(!c.order||c.st==='leave')continue;
+    for(const it of c.order.items){if(it.s!=='wait'||MENU[it.k].st!==kind)continue;if(!best||c.order.ot<best.c.order.ot)best={c,it};}}
+  return best;
+}
+function startJob(st,it,c,auto){it.s='make';SH.jobs[st.id]={st,it,c,t:0,need:MENU[it.k].t,auto:!!auto};}
+function finishJob(sid){
+  const j=SH.jobs[sid];delete SH.jobs[sid];
+  if(j.it.s==='make'){j.it.s='ready';float(j.c,'siap!','#2d6fb5');}
+}
+function deliver(c){
+  const rd=c.order.items.filter(i=>i.s==='ready');
+  if(!rd.length){
+    const pend=c.order.items.find(i=>i.s==='wait'||i.s==='make');
+    toast(pend?'Pesanannya belum jadi — ketuk '+DEFS[MENU[pend.k].st].name:'');return;
+  }
+  let sum=0;for(const it of rd){it.s='done';sum+=itemPrice(it);}
+  c.got+=sum;BZ.money+=sum;BZ.total+=sum;SH.stats.earned+=sum;SH.stats.sold+=rd.length;
+  float(c,'+'+sum+'rb');
+  if(!c.order.items.some(i=>i.s==='wait'||i.s==='make'||i.s==='ready')){
+    const stars=starsOf(vibeScore()),tip=c.pat>.25?Math.round(c.got*c.pat*.22*(.8+.1*stars)):0;
+    if(tip>0){BZ.money+=tip;BZ.total+=tip;SH.stats.tips+=tip;SH.flt.push({x:c.x,y:c.y,txt:'tip +'+tip+'rb',col:'#c58a1a',t:-.5});}
+    SH.stats.served++;
+    if(c.dine&&c.seat){c.st='eat';c.eatT=10+Math.random()*4;}else startLeave(c,false);
+  }
+  save();updateHud();
+}
+function tapCust(c){
+  if(c.st==='q'){
+    if(SH.queue[0]===c&&!c.path.length)takeOrder(c);else toast('Layani pelanggan paling depan dulu');
+    return true;
+  }
+  if(c.order&&c.st!=='leave'&&c.st!=='eat'){deliver(c);return true;}
+  return false;
+}
+function tapStation(st){
+  if(SH.jobs[st.id]){toast('Masih dibikin…');return true;}
+  const o=pendingFor(st.def);
+  if(!o){toast('Belum ada pesanan buat '+DEFS[st.def].name);return true;}
+  startJob(st,o.it,o.c);return true;
+}
+
+/* ---------- loop simulasi ---------- */
+function stepWalk(c,dt){
+  c.walk=false;if(!c.path.length)return;
+  const [tx,ty]=c.path[0],wx=tx+.5,wy=ty+.5,dx=wx-c.x,dy=wy-c.y,dist=Math.hypot(dx,dy),sp=2.2*dt;
+  c.walk=true;
+  if(Math.abs(dx)>.02||Math.abs(dy)>.02)c.rot=Math.abs(dy)>=Math.abs(dx)?(dy>0?0:2):(dx>0?3:1);
+  if(dist<=sp){c.x=wx;c.y=wy;c.path.shift();}else{c.x+=dx/dist*sp;c.y+=dy/dist*sp;}
+}
+function updCust(c,dt){
+  c.age+=dt;
+  if(c.fade){c.alpha-=dt*2.4;if(c.alpha<=0)c.gone=true;return;}
+  if(c.alpha<1)c.alpha=Math.min(1,c.alpha+dt*2.4);
+  stepWalk(c,dt);
+  const n=c.order?c.order.items.length:1;
+  switch(c.st){
+    case 'q':
+      c.pat-=dt/42;
+      if(c.pat<=0)startLeave(c,true);break;
+    case 'toSeat':case 'toPick':
+      if(!c.path.length){c.st='wait';if(c.seat){c.sit=true;c.x=c.seat.x+.5;c.y=c.seat.y+.5;c.rot=c.seat.rot;}}break;
+    case 'wait':
+      c.pat-=dt/((48+8*n)*(c.dine?1.3:1));
+      if(c.pat<=0)startLeave(c,true);break;
+    case 'eat':
+      c.eatT-=dt;if(c.eatT<=0)startLeave(c,false);break;
+    case 'leave':
+      if(!c.path.length)c.fade=true;break;
+  }
+}
+function bzTick(dt){
+  if(!SH.on)return;dt*=SH.speed;SH.t+=dt;
+  if(!SH.closing){
+    SH.spawnT-=dt;if(SH.spawnT<=0){spawnCust();SH.spawnT=nextGap();}
+    if(SH.t>=SH.dur)SH.closing=true;
+  }else SH.tail+=dt;
+  for(const sid of Object.keys(SH.jobs)){const j=SH.jobs[sid];if(!j)continue;j.t+=dt;if(j.t>=j.need)finishJob(sid);}
+  SH.autoT+=dt;
+  if(SH.autoT>=.7){
+    SH.autoT=0;
+    const nb=S.items.filter(i=>DEFS[i.def].char).length,auto=Math.min(2,Math.max(0,nb-1));
+    let run=Object.values(SH.jobs).filter(j=>j.auto).length;
+    if(run<auto)for(const st of S.items){if(run>=auto)break;if(!STN.includes(st.def)||SH.jobs[st.id])continue;const o=pendingFor(st.def);if(o){startJob(st,o.it,o.c,true);run++;}}
+  }
+  for(const c of SH.custs.slice())updCust(c,dt);
+  SH.custs=SH.custs.filter(c=>!c.gone);
+  for(const f of SH.flt)f.t+=dt;SH.flt=SH.flt.filter(f=>f.t<1.4);
+  if(SH.closing&&SH.tail>40)for(const c of SH.custs)if(c.st!=='leave')startLeave(c,true);
+  if(SH.closing&&!SH.custs.length)endShift(false);
+  SH.uiT-=dt;if(SH.uiT<=0){SH.uiT=.25;uiRefresh();}
+}
+
+/* ---------- ikon pixel & gelembung ---------- */
+const OLN='#3a281f';
+function ell(g,cx,cy,rx,ry,fill,ol,fl2){
+  for(let y=0;y<11;y++)for(let x=0;x<11;x++){const d=((x+.5-cx)/rx)**2+((y+.5-cy)/ry)**2;if(d<=1){g.fillStyle=d>.62?ol:(fl2&&y+.5<cy-ry*.1?fl2:fill);g.fillRect(x,y,1,1);}}
+}
+const iconCache={};
+function icon(k){
+  if(iconCache[k])return iconCache[k];
+  const c=mkCanvas(11,11),g=c.getContext('2d'),P=(x,y,w,h,col)=>{g.fillStyle=col;g.fillRect(x,y,w,h);};
+  if(k==='ice'){P(6,0,1,3,'#d95f4b');P(1,2,9,1,OLN);P(1,3,9,1,'#fbf7ee');P(2,4,7,5,OLN);P(3,4,5,4,'#bfe0ee');P(3,6,5,2,'#8a5a3a');P(3,6,5,1,'#c9966a');P(4,4,2,2,'#fbf7ee');P(6,5,1,1,'#fbf7ee');}
+  else if(k==='hot'){P(4,0,1,2,'#aaa398');P(6,1,1,2,'#aaa398');P(2,3,7,6,OLN);P(3,4,5,4,'#c9966a');P(3,4,5,1,'#f3e6cf');P(3,5,5,3,'#8a5a3a');P(9,4,2,1,OLN);P(10,5,1,2,OLN);P(9,7,2,1,OLN);}
+  else if(k==='dn'){ell(g,5.5,5.5,5,4.4,'#e0a45a',OLN,'#e58aa6');P(4,5,3,1,'rgba(0,0,0,0)');g.clearRect(4,5,3,1);g.clearRect(5,4,1,3);P(4,4,1,1,OLN);P(6,4,1,1,OLN);P(4,6,1,1,OLN);P(6,6,1,1,OLN);P(3,3,1,1,'#fbf7ee');P(7,2,1,1,'#fbf7ee');P(8,4,1,1,'#7ec8e3');}
+  else if(k==='sb'){ell(g,5.5,5.5,5,3.1,'#e0a45a',OLN);P(3,5,5,1,'#b9792f');P(2,4,1,1,'#fbf7ee');P(5,3,1,1,'#fbf7ee');P(8,4,1,1,'#fbf7ee');P(4,6,1,1,'#fbf7ee');P(7,6,1,1,'#fbf7ee');}
+  else if(k==='pf'){ell(g,5.5,8.4,5,2.3,'#e9e4d6',OLN);ell(g,3.2,6,2.3,2.2,'#e0a45a',OLN);ell(g,7.8,6,2.3,2.2,'#e0a45a',OLN);ell(g,5.5,3.8,2.3,2.2,'#e9b36a',OLN);P(5,3,1,1,'#fbf7ee');P(3,5,1,1,'#fbf7ee');P(8,5,1,1,'#fbf7ee');}
+  return iconCache[k]=c;
+}
+const iconKey=it=>MENU[it.k].drink?(it.v==='ice'?'ice':'hot'):it.k;
+function bub(g,cx,by,w,h,bg){
+  const x=Math.round(cx-w/2),y=by-h;
+  R(g,x+1,y,w-2,h,OLN);R(g,x,y+1,w,h-2,OLN);R(g,x+1,y+1,w-2,h-2,bg);
+  R(g,cx-1,by,3,1,OLN);R(g,cx,by+1,1,1,OLN);R(g,cx-1,by-1,3,1,bg);
+}
+function patBar(g,ax,y,pat){
+  R(g,ax-6,y,12,3,OLN);R(g,ax-5,y+1,Math.max(0,Math.round(10*pat)),1,pat>.55?'#5fbf5a':pat>.28?'#f2c94c':'#d9534f');
+}
+function drawCust(g,c,t){
+  const f=c.walk?Math.floor(t/170)%2:0,sp=custSprite(c.look,c.rot,f,c.sit);
+  const ax=OX+16*(c.x-c.y),ay=OY+8*(c.x+c.y)-8;
+  g.globalAlpha=Math.max(0,c.alpha);g.drawImage(sp.cv,Math.round(ax-sp.ox),Math.round(ay-sp.oy));g.globalAlpha=1;
+}
+function walkers(){
+  const out=[];for(const c of SH.custs){if(c.sit)continue;out.push({id:'c'+c.id,def:'__cust',gx:Math.floor(c.x),gy:Math.floor(c.y),rot:0,cust:c});}
+  return out;
+}
+function placeSeated(list){
+  const by={};for(const c of SH.custs)if(c.sit&&c.seat)(by[c.seat.it.id]=by[c.seat.it.id]||[]).push(c);
+  if(!Object.keys(by).length)return list;
+  const out=[];
+  for(const it of list){out.push(it);const a=by[it.id];if(a){a.sort((p,q)=>(p.x+p.y)-(q.x+q.y));for(const c of a)out.push({id:'c'+c.id,def:'__cust',cust:c});}}
+  return out;
+}
+function hitCust(ix,iy,loose){
+  let best=null,bd=-1e9;
+  for(const c of SH.custs){if(c.alpha<.5||c.fade)continue;
+    const ax=OX+16*(c.x-c.y),ay=OY+8*(c.x+c.y)-8;
+    if(loose){if(ix>=ax-12&&ix<=ax+12&&iy>=ay-(c.sit?28:34)&&iy<=ay+12&&ay>bd){best=c;bd=ay;}continue;}
+    if(Math.abs(ix-ax)<=14&&iy>=ay-(c.sit?25:30)-24&&iy<=ay-(c.sit?25:30)-3&&(c.order?(c.st==='wait'||c.st==='toSeat'||c.st==='toPick'):(SH.queue[0]===c&&!c.path.length))){if(ay>bd){best=c;bd=ay;}continue;}
+    const sp=custSprite(c.look,c.rot,0,c.sit),lx=Math.floor(ix-Math.round(ax-sp.ox)),ly=Math.floor(iy-Math.round(ay-sp.oy));
+    if(lx<1||ly<1||lx>=sp.cv.width-1||ly>=sp.cv.height-1)continue;
+    const d=sp.cv.getContext('2d').getImageData(lx-1,ly-1,3,3).data;let hit=false;for(let i=3;i<36;i+=4)if(d[i]>40){hit=true;break;}
+    if(hit&&ay>bd){best=c;bd=ay;}
+  }
+  return best;
+}
+function bzOverlay(g,t){
+  if(!SH.on)return;
+  g.globalCompositeOperation='source-over';
+  const bob=Math.round(Math.sin(t/260));
+  for(const c of SH.custs){
+    if(c.alpha<.4||c.fade)continue;
+    const ax=Math.round(OX+16*(c.x-c.y)),ay=Math.round(OY+8*(c.x+c.y)-8),top=ay-(c.sit?25:30);
+    const front=SH.queue[0]===c&&c.st==='q'&&!c.path.length;
+    let by=top-3;
+    if(c.st!=='eat'&&c.st!=='leave'&&c.st!=='toSeat'&&c.st!=='toPick'&&(c.order||c.pat<.7||front)){patBar(g,ax,top-1,c.pat);by=top-5;}
+    if(front){bub(g,ax,by+bob,13,13,'#fff2b8');R(g,ax-1,by+bob-10,2,5,'#d9534f');R(g,ax-1,by+bob-4,2,2,'#d9534f');}
+    else if(c.order&&(c.st==='wait'||c.st==='toSeat'||c.st==='toPick')){
+      const its=c.order.items.filter(i=>i.s!=='done'&&i.s!=='x');
+      if(its.length){
+        const w=its.length*12+2,anyR=its.some(i=>i.s==='ready'),x0=Math.round(ax-w/2)+2;
+        bub(g,ax,by+bob,w,14,anyR?'#c9f0c4':'#ffffff');
+        its.forEach((it,i)=>{g.globalAlpha=it.s==='make'?.55:1;g.drawImage(icon(iconKey(it)),x0+i*12,by+bob-13);g.globalAlpha=1;if(it.s==='ready')R(g,x0+i*12+1,by+bob-2,9,1,'#2f9a3a');});
+      }
+    }else if(c.st==='leave'&&c.angry){bub(g,ax,by+bob,11,11,'#ffd0c8');R(g,ax-1,by+bob-8,2,4,'#d9534f');R(g,ax-1,by+bob-3,2,2,'#d9534f');}
+  }
+  for(const st of S.items){
+    if(!STN.includes(st.def))continue;
+    const v=getVariant(DEFS[st.def],st.rot,0),cx=st.gx+v.fw/2,cy=st.gy+v.fd/2,sx=Math.round(OX+16*(cx-cy)),sy=Math.round(OY+8*(cx+cy))-36,job=SH.jobs[st.id];
+    if(job){
+      bub(g,sx,sy,16,14,'#ffffff');g.drawImage(icon(iconKey(job.it)),sx-5,sy-13);
+      R(g,sx-9,sy+3,18,4,OLN);R(g,sx-8,sy+4,Math.round(16*Math.min(1,job.t/job.need)),2,job.auto?'#6fa8dc':'#5fbf5a');
+    }else{
+      const o=pendingFor(st.def);
+      if(o){const b=Math.round(Math.sin(t/200)*1.5);bub(g,sx,sy+b,14,14,'#fff2b8');g.drawImage(icon(iconKey(o.it)),sx-5,sy+b-13);}
+    }
+  }
+}
+function bzFloat(){
+  if(!SH.on||!SH.flt.length)return;
+  dctx.save();dctx.textAlign='center';dctx.textBaseline='middle';dctx.font='600 '+Math.round(13*dpr)+'px "Pixelify Sans",ui-monospace,monospace';dctx.lineJoin='round';
+  for(const f of SH.flt){
+    const ax=OX+16*(f.x-f.y),ay=OY+8*(f.x+f.y)-8-40-f.t*14,X=offX+ax*dispScale,Y=offY+ay*dispScale;
+    dctx.globalAlpha=Math.max(0,1-Math.max(0,f.t-.8)/.6);dctx.lineWidth=3*dpr;dctx.strokeStyle='#fff8e8';dctx.strokeText(f.txt,X,Y);dctx.fillStyle=f.col;dctx.fillText(f.txt,X,Y);
+  }
+  dctx.restore();
+}
+
+/* ---------- HUD, modal, kontrol shift ---------- */
+const KEYS='ruangkopi.v1',KEYB='ruangkopi.biz.v1',KEYM='ruangkopi.mode';
+const fmtT=s=>{s=Math.ceil(s);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+function flushSave(){clearTimeout(saveT);try{localStorage.setItem(S.gm==='bisnis'?KEYB:KEYS,core());}catch(e){}}
+let hudSig='';
+function updateHud(){
+  const h=$('#hud');if(!h)return;
+  if(S.gm!=='bisnis'){h.hidden=true;hudSig='';return;}
+  h.hidden=false;
+  const vs=vibeScore(),stars=starsOf(vs),left=SH.on?Math.max(0,SH.dur-SH.t):0;
+  const sig=[BZ.money,BZ.day,stars,SH.on,SH.on?Math.ceil(left):0,SH.closing].join('|');
+  if(sig===hudSig)return;hudSig=sig;
+  h.innerHTML='';
+  const pill=(t,cls,title)=>{const d=el('div','pill '+(cls||''),t);if(title)d.title=title;h.append(d);return d;};
+  pill('<b>'+rp(BZ.money)+'</b>','money');
+  pill('Hari '+BZ.day);
+  const nxt=STARS[stars]!=null?' — bintang berikutnya di '+STARS[stars]+' poin':' — bintang maksimal';
+  pill('<span class="st">'+'★'.repeat(stars)+'</span><span class="st off">'+'★'.repeat(5-stars)+'</span>','stars','Vibe '+Math.round(vs)+' poin'+nxt);
+  if(SH.on)pill(SH.closing?'Tutup…':'⏱ '+fmtT(left),'timer');
+  else{const b=el('button','btn on','Buka Kedai ▶');b.onclick=startShift;h.append(b);}
+}
+function showBox(title,body,btns){
+  const m=$('#gm');m.innerHTML='';const b=el('div','box mbox');b.append(el('h3','',title));
+  const bd=el('div','mbody');if(typeof body==='string')bd.innerHTML=body;else bd.append(body);b.append(bd);
+  const row=el('div','row');row.style.justifyContent='center';
+  (btns||[['OK']]).forEach(([t,fn,c])=>{const x=el('button','btn '+(c||''),t);x.onclick=()=>{m.hidden=true;if(fn)fn();};row.append(x);});
+  if(row.children.length)b.append(row);m.append(b);m.hidden=false;
+}
+function startShift(){
+  if(SH.on)return;
+  const L=bzLayout();
+  if(L.warn.length||!L.slots){showBox('Belum bisa buka kedai',L.warn.map(w=>'• '+w).join('<br>'),[['OK']]);return;}
+  undoStack.length=0;
+  Object.assign(SH,{on:true,t:0,closing:false,tail:0,custs:[],nid:1,spawnT:1.2,L,queue:[],pick:[],jobs:{},seats:L.seats,stats:{earned:0,tips:0,served:0,lost:0,sold:0},autoT:0,flt:[],uiT:0,lastSig:'',hint:''});
+  S.mode='select';S.placeDef=null;S.ghost=null;S.sel=null;S.drag=null;
+  hudSig='';renderPanel();updateCtx();updateTop();updateHud();
+  toast('Kedai dibuka! Ketuk pelanggan bertanda !');
+}
+function endShift(early){
+  if(!SH.on)return;
+  const st=SH.stats,day=BZ.day;SH.on=false;SH.custs=[];SH.jobs={};SH.flt=[];
+  BZ.day++;flushSave();hudSig='';
+  renderPanel();updateCtx();updateTop();updateHud();
+  const stars=starsOf(vibeScore());
+  let tip='Beli dekor dan item baru di tab bawah buat naikin vibe kedai.';
+  if(st.lost>st.served&&st.lost>2)tip='Banyak pelanggan kabur. Tambah mesin, rekrut barista (auto bikin pesanan), atau tambah kursi.';
+  else if(!availMenu().has('dn'))tip='Beli Etalase Kue biar bisa jual Donat & Saltbread — tambahan omzet per pelanggan.';
+  else if(!availMenu().has('pf'))tip='Beli Panggangan Poffertjes buat nambah menu 25rb.';
+  const body=el('div','recap');
+  body.innerHTML='<div class="big">'+rp(st.earned+st.tips)+'</div>'
+    +'<div class="rl"><span>Penjualan ('+st.sold+' item)</span><b>'+rp(st.earned)+'</b></div>'
+    +'<div class="rl"><span>Tip</span><b>'+rp(st.tips)+'</b></div>'
+    +'<div class="rl"><span>Pelanggan dilayani</span><b>'+st.served+'</b></div>'
+    +'<div class="rl"><span>Pelanggan kabur</span><b>'+st.lost+'</b></div>'
+    +'<div class="rl"><span>Vibe kedai</span><b>'+'★'.repeat(stars)+'</b></div>'
+    +'<div class="rl"><span>Total uang</span><b>'+rp(BZ.money)+'</b></div>'
+    +'<div class="note">'+tip+'</div>';
+  showBox((early?'Tutup lebih awal — ':'')+'Hari '+day+' selesai',body,[['Lanjut dekor']]);
+}
+function shiftHint(){
+  if(SH.custs.some(c=>c.order&&c.order.items.some(i=>i.s==='ready')))return 'Pesanan siap! Ketuk pelanggan dengan gelembung hijau buat nganter.';
+  for(const st of S.items){if(!STN.includes(st.def)||SH.jobs[st.id])continue;const o=pendingFor(st.def);if(o)return 'Ketuk '+DEFS[st.def].name+' buat bikin '+MENU[o.it.k].n.replace(' Ruang','')+'.';}
+  const f=SH.queue[0];
+  if(f&&!f.path.length)return 'Ketuk pelanggan bertanda ! buat ambil pesanan.';
+  return SH.closing?'Kedai tutup — layani sisa pelanggan.':'Nunggu pelanggan… ketuk pelanggan / mesin buat melayani.';
+}
+function hitStationBubble(ix,iy){
+  for(const st of S.items){
+    if(!STN.includes(st.def))continue;
+    if(!SH.jobs[st.id]&&!pendingFor(st.def))continue;
+    const v=getVariant(DEFS[st.def],st.rot,0),cx=st.gx+v.fw/2,cy=st.gy+v.fd/2,sx=OX+16*(cx-cy),sy=OY+8*(cx+cy)-36;
+    if(Math.abs(ix-sx)<=10&&iy>=sy-18&&iy<=sy+6)return st;
+  }
+  return null;
+}
+function shiftTap(ix,iy){
+  const sb=hitStationBubble(ix,iy);
+  if(sb){tapStation(sb);uiRefresh(true);return;}
+  const c=hitCust(ix,iy);
+  if(c&&tapCust(c)){uiRefresh(true);return;}
+  const it=hitItem(ix,iy,performance.now());
+  if(!it){const c2=hitCust(ix,iy,true);if(c2&&tapCust(c2))uiRefresh(true);return;}
+  {
+    if(STN.includes(it.def)){tapStation(it);uiRefresh(true);return;}
+    if(it.def==='kasir'){const f=SH.queue[0];if(f&&!f.path.length)takeOrder(f);else toast('Belum ada yang antre');uiRefresh(true);return;}
+    const cells=cellsOf(getVariant(DEFS[it.def],it.rot,0),it.gx,it.gy);let best=null,bd=9;
+    for(const st of S.items){if(!STN.includes(st.def)||SH.jobs[st.id]||!pendingFor(st.def))continue;
+      for(const [x,y] of cellsOf(getVariant(DEFS[st.def],st.rot,0),st.gx,st.gy))for(const [cx,cy] of cells){const d=Math.max(Math.abs(x-cx),Math.abs(y-cy));if(d<bd){bd=d;best=st;}}}
+    if(best&&bd<=1){tapStation(best);uiRefresh(true);}
+  }
+}
+function ticketAction(c){
+  if(c.order&&c.order.items.some(i=>i.s==='ready')){deliver(c);return;}
+  const it=c.order&&c.order.items.find(i=>i.s==='wait');
+  if(it){const st=S.items.find(s=>s.def===MENU[it.k].st&&!SH.jobs[s.id]);if(st)startJob(st,it,c);else toast('Mesinnya lagi dipakai');}
+}
+function uiRefresh(force){
+  updateHud();
+  const h=shiftHint();if(h!==SH.hint){SH.hint=h;const m=$('#ctx .msg');if(m)m.textContent=h;}
+  const sig=SH.custs.filter(c=>c.order).map(c=>c.id+c.st+((c.pat*8)|0)+c.order.items.map(i=>i.s).join('')).join(',')+Object.keys(SH.jobs).length;
+  if(force||sig!==SH.lastSig){SH.lastSig=sig;renderPanel();}
+}
+function shiftPanel(tabs,box){
+  tabs.append(el('div','sec',SH.closing?'Kedai tutup — pesanan tersisa':'Pesanan masuk'));
+  const list=SH.custs.filter(c=>c.order&&c.st!=='leave'&&c.order.items.some(i=>i.s!=='done'&&i.s!=='x'));
+  if(!list.length){
+    box.append(el('div','note','<b>Cara main</b><br>1. Ketuk pelanggan bertanda <b>!</b> di depan kasir buat ambil pesanan.<br>2. Ketuk mesin (Espresso, Etalase, dst) yang bergelembung buat bikin.<br>3. Pelanggan bergelembung hijau? Ketuk dia buat nganter. Uang masuk!<br>Pelanggan sabarnya terbatas — perhatikan bar di atas kepala.'));
+  }
+  list.forEach(c=>{
+    const r=el('button','tk'+(c.order.items.some(i=>i.s==='ready')?' rdy':''));
+    const top=el('div','tkt');
+    top.append(el('b','',(c.dine?'Dine-in':'Take-away')+' #'+c.id));
+    const bar=el('i','pbar'),fill=el('i','');fill.style.width=Math.round(c.pat*100)+'%';fill.style.background=c.pat>.55?'#5fbf5a':c.pat>.28?'#f2c94c':'#d9534f';bar.append(fill);top.append(bar);
+    r.append(top);
+    c.order.items.filter(i=>i.s!=='done'&&i.s!=='x').forEach(it=>{
+      const row=el('div','tki'),cv=mkCanvas(22,22),g=cv.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(icon(iconKey(it)),0,0,22,22);
+      const stt=it.s==='ready'?'siap — antar!':it.s==='make'?'dibikin…':'menunggu '+DEFS[MENU[it.k].st].name;
+      row.append(cv,el('span','',MENU[it.k].n.replace(' Ruang','')+(it.v==='x'?'':(it.v==='ice'?' · Ice':' · Hot'))+'<small>'+stt+'</small>'));
+      r.append(row);
+    });
+    r.onclick=()=>{ticketAction(c);uiRefresh(true);};
+    box.append(r);
+  });
+  const row=el('div','row');const b=el('button','btn warn','Tutup kedai sekarang');b.onclick=()=>endShift(true);row.append(b);box.append(row);
+}
+function menuTab(box){
+  box.append(el('div','sec','Menu & harga'));
+  const av=availMenu();
+  for(const k of MENU_KEYS){
+    const m=MENU[k],r=el('div','mi'+(av.has(k)?'':' off')),cv=mkCanvas(33,33),g=cv.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(icon(m.drink?'ice':k),0,0,33,33);
+    const pr=m.p.x!=null?rp(m.p.x):(m.p.hot?'Ice '+rp(m.p.ice)+' · Hot '+rp(m.p.hot):'Ice '+rp(m.p.ice));
+    r.append(cv,el('div','',m.n+'<small>'+pr+'</small><small>'+(av.has(k)?'Tersedia':'Terkunci — butuh '+DEFS[m.st].name)+'</small>'));box.append(r);
+  }
+  const L0=bzLayout();
+  box.append(el('div','sec','Tempat duduk'));
+  box.append(el('div','note',L0.seats?'Kursi aktif: <b>'+L0.seats.length+'</b> (kursi yang dekat meja dan bisa dijangkau). Pelanggan dine-in pilih kursi ini; kalau penuh mereka jadi take-away.':'Belum bisa dihitung — pastikan ada pintu & kasir yang bisa dijangkau.'));
+  const vs=vibeScore(),stars=starsOf(vs);
+  box.append(el('div','sec','Vibe kedai'));
+  box.append(el('div','note','Skor vibe: <b>'+Math.round(vs)+'</b> poin = '+'★'.repeat(stars)+(STARS[stars]!=null?'. Bintang berikutnya di '+STARS[stars]+' poin.':'. Sudah bintang maksimal!')+'<br>Dekor, hiasan dinding, meja, dan kursi menaikkan vibe. Bintang lebih tinggi = pelanggan lebih sering datang dan tip lebih gede.'));
+  box.append(el('div','note','Barista tambahan (rekrut di tab Barista) otomatis ngerjain pesanan di mesin yang nganggur — maksimal 2 barista bantu.'));
+}
+/* ---------- mode & karier ---------- */
+const hasSave=k=>{try{return !!localStorage.getItem(k);}catch(e){return false;}};
+function chooseMode(first){
+  if(SH.on){toast('Tutup kedai dulu sebelum ganti mode');return;}
+  const body=el('div','mrow');
+  const c1=el('button','mcard');c1.innerHTML='<b>Mode Bisnis</b><span>Jadi pengusaha kedai kopi. Layani pelanggan, kumpulin uang, beli dekor & mesin baru.</span>';
+  c1.onclick=()=>{$('#gm').hidden=true;if(S.gm==='bisnis')return;if(hasSave(KEYB))switchMode('bisnis');else careerPicker();};
+  const c2=el('button','mcard');c2.innerHTML='<b>Mode Santai</b><span>Dekor bebas tanpa batas. Semua item gratis, tanpa pelanggan.</span>';
+  c2.onclick=()=>{$('#gm').hidden=true;if(S.gm==='santai'&&!first)return;switchMode('santai');};
+  body.append(c1,c2);
+  showBox(first?'Selamat datang di Ruang Kopi':'Pilih mode',body,first?[]:[['Batal']]);
+}
+function careerPicker(){
+  const body=el('div','mrow');
+  CATS.barista.filter(id=>DEFS[id].char).forEach(id=>{
+    const c=el('button','card tall'),cvs=mkCanvas(120,116);drawPreview(cvs,DEFS[id]);c.append(cvs,el('span','',DEFS[id].name));
+    c.onclick=()=>{$('#gm').hidden=true;newCareer(id);};body.append(c);
+  });
+  showBox('Pilih baristamu',body,hasSave(KEYB)||S.gm==='bisnis'?[['Batal']]:[]);
+}
+function switchMode(target){
+  if(SH.on){toast('Tutup kedai dulu sebelum ganti mode');return;}
+  if(S.items.length)flushSave();S.gm=target;try{localStorage.setItem(KEYM,target);}catch(e){}
+  undoStack.length=0;let raw=null;try{raw=localStorage.getItem(target==='bisnis'?KEYB:KEYS);}catch(e){}
+  if(raw)restore(raw);else if(target==='santai'){loadStarter();undoStack.length=0;}
+  S.mode='select';S.placeDef=null;S.ghost=null;if(S.tab==='menu'&&target!=='bisnis')S.tab='barista';
+  hudSig='';buildRoom();resize();afterChange(true);updateHud();
+  toast(target==='bisnis'?'Mode Bisnis — lanjut kariermu':'Mode Santai — dekor bebas');
+}
+function newCareer(bid){
+  if(SH.on)return;
+  if(S.gm==='santai'&&S.items.length)flushSave();
+  S.gm='bisnis';try{localStorage.setItem(KEYM,'bisnis');}catch(e){}
+  undoStack.length=0;BZ.money=600;BZ.day=1;BZ.total=0;
+  S.W=7;S.D=6;resetFloor('kayu');S.wallL='krem';S.wallR='bata';S.theme='japandi';S.night=false;S.items=[];S.sel=null;S.mode='select';S.placeDef=null;S.ghost=null;S.nextId=1;
+  buildRoom();const A=addItem;
+  A('tanaman',0,0,0);A('rakCangkir',2,0,0);A('grinder',3,0,0);A('counter1',4,0,0);A(bid,3,1,0);
+  A('espresso',2,2,0);A('kasir',4,2,0);
+  A('mejaKotak',2,4,0);A('kursi',1,4,3);A('kursi',3,4,1);A('mejaKotak',5,4,0);A('kursi',4,4,3);A('kursi',6,4,1);
+  A('pintu',5,0,0,'R');A('menuboard',2,0,0,'R');A('jendela',1,0,0,'L');
+  S.tab='barista';hudSig='';resize();afterChange(true);updateHud();flushSave();
+  toast('Kedai pertamamu siap! Tekan Buka Kedai');
+}
+function bzBoot(){
+  let mode=null,raw=null;
+  try{mode=localStorage.getItem(KEYM);}catch(e){}
+  try{
+    if(mode==='bisnis'){raw=localStorage.getItem(KEYB);if(raw){S.gm='bisnis';restore(raw);return 'ok';}}
+    else{raw=localStorage.getItem(KEYS);if(raw){S.gm='santai';restore(raw);return mode===null?'old':'ok';}}
+  }catch(e){}
+  return mode===null?'fresh':'nobiz';
+}
+const BIZ={BZ,SH,MENU,PRICE,bzLayout,startShift,endShift,tick:bzTick,vibeScore,starsOf,newCareer,switchMode,takeOrder,tapCust,tapStation,deliver,pendingFor,shiftHint,hitCust,uiRefresh,showBox,availMenu,spawnCust,icon,ticketAction,chooseMode};
+
+
+/* ---------------- init ---------------- */
+$('#bUndo').onclick=undo;
+$('#bNight').onclick=()=>{S.night=!S.night;updateTop();renderPanel();save();};
+$('#bShot').onclick=takePhoto;
+$('#bClose').onclick=()=>{$('#modal').hidden=true;};
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')$('#modal').hidden=true;});
+new ResizeObserver(resize).observe($('#stage'));
+$('#bGm').onclick=()=>chooseMode(false);
+const bootR=bzBoot();
+buildRoom();resize();updateTop();updateCtx();updateEmpty();renderPanel();updateHud();
+if(bootR==='fresh')chooseMode(true);else if(bootR==='nobiz')careerPicker();
+else if(bootR==='old'){try{localStorage.setItem(KEYM,'santai');}catch(e){}
+  showBox('Ada Mode Bisnis baru!','Sekarang kamu bisa jadi <b>pengusaha kedai kopi</b>: pelanggan datang, pesan kopi &amp; donat, kamu layani, uangnya buat beli dekor. Dekor santaimu yang lama tetap aman di Mode Santai.',[['Coba Mode Bisnis',()=>{if(hasSave(KEYB))switchMode('bisnis');else careerPicker();}],['Nanti aja']]);}
+requestAnimationFrame(loop);
+window.G={loadJaksel,PRESETS,FLOORS,WALLS,THEMES,getSprite,wallSprite,frameOf,S,DEFS,addItem,loadStarter,startPlace,render,buildRoom,canPlaceFloor,canPlaceWall,getVariant,toView,hitItem,applyPreset,renderPanel,setSize,undo,core,bz:BIZ,fillAllFloor,careerPicker,toClient:(ix,iy)=>{const r=cv.getBoundingClientRect();return [r.left+(offX+ix*dispScale)/dpr,r.top+(offY+iy*dispScale)/dpr];},custXY:c=>[OX+16*(c.x-c.y),OY+8*(c.x+c.y)-8],tileXY:(x,y)=>[OX+16*(x-y),OY+8*(x+y)+8]};
+})();
+</script>
+</body>
+</html>
